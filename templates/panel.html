@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>LabFlow - Panel</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
+
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: linear-gradient(120deg, #007bff 0%, #6dd5ed 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 950px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 36px;
+            border-radius: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            padding: 12px 30px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-weight: 700;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid #007bff;
+            color: #007bff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        #calendar {
+            margin-top: 20px;
+        }
+    </style>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales/pl.global.min.js'></script>
+
+    <script>
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            document.getElementById(tab + '-tab').classList.add('active');
+            document.getElementById(tab + '-content').classList.add('active');
+
+            if (tab === 'kalendarz') {
+                initCalendar();
+            }
+        }
+
+        async function fetchEvents(info, successCallback, failureCallback) {
+            try {
+                console.log("Pobieram dane z API...");
+
+                const response = await fetch('/api/rezerwacje/', {
+                    credentials: 'include'
+                });
+
+                console.log("Status:", response.status);
+
+                if (!response.ok) {
+                    throw new Error("HTTP error " + response.status);
+                }
+
+                const data = await response.json();
+                console.log("Dane:", data);
+
+                const events = data.map(item => ({
+                    title: 'Rezerwacja: ' + (item.sprzet_nazwa || item.sprzet),
+                    start: item.start,
+                    end: item.end,
+                    color: getColor(item.status),
+                    extendedProps: {
+                        status: item.status
+                    }
+                }));
+
+                console.log("Events:", events);
+
+                successCallback(events);
+
+            } catch (error) {
+                console.error("BŁĄD:", error);
+                failureCallback(error);
+            }
+        }
+
+        function getColor(status) {
+            switch (status) {
+                case 'aktywna': return '#007bff';
+                case 'oczekujaca': return '#ffc107';
+                case 'anulowana': return '#adb5bd';
+                default: return '#999';
+            }
+        }
+
+        function initCalendar() {
+            const calendarEl = document.getElementById('calendar');
+
+            if (window.calendarInstance) {
+                window.calendarInstance.destroy();
+            }
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'pl',
+                timeZone: 'local',
+                height: 500,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+
+                events: fetchEvents,
+
+                eventClick: function (info) {
+                    const ev = info.event;
+                    alert(
+                        'Sprzęt: ' + ev.title +
+                        '\nOd: ' + ev.start.toLocaleString() +
+                        '\nDo: ' + ev.end.toLocaleString() +
+                        '\nStatus: ' + (ev.extendedProps.status || 'brak')
+                    );
+                }
+            });
+
+            calendar.render();
+            window.calendarInstance = calendar;
+        }
+
+        window.onload = function () {
+            showTab('kalendarz');
+        };
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>LabFlow</h1>
+
+        <div class="tabs">
+            <button class="tab" id="kalendarz-tab" onclick="showTab('kalendarz')">Kalendarz</button>
+            <button class="tab" id="rezerwacje-tab" onclick="showTab('rezerwacje')">Rezerwacje</button>
+            <button class="tab" id="sprzet-tab" onclick="showTab('sprzet')">Sprzęt</button>
+            <button class="tab" id="laboratoria-tab" onclick="showTab('laboratoria')">Laboratoria</button>
+            <button class="tab" id="serwis-tab" onclick="showTab('serwis')">Serwis</button>
+        </div>
+
+        {% include 'panel_kalendarz.html' %}
+        {% include 'panel_rezerwacje.html' %}
+        {% include 'panel_sprzet.html' %}
+        {% include 'panel_laboratoria.html' %}
+        {% include 'panel_serwis.html' %}
+    </div>
+</body>
+
+</html>

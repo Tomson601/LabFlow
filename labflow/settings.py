@@ -37,7 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'labflow',
 ]
+
+# Custom user model
+AUTH_USER_MODEL = 'labflow.Uzytkownik'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -54,7 +61,7 @@ ROOT_URLCONF = 'labflow.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -74,8 +81,13 @@ WSGI_APPLICATION = 'labflow.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'mssql',
+        'NAME': 'labflow2',
+        'HOST': 'LenovoLOQ\SQLEXPRESS',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
+            'trusted_connection': 'yes',
+        },
     }
 }
 
