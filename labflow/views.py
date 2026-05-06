@@ -53,10 +53,14 @@ class SprzetViewSet(viewsets.ModelViewSet):
     serializer_class = SprzetSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
 class RezerwacjaViewSet(viewsets.ModelViewSet):
     queryset = Rezerwacja.objects.all()
     serializer_class = RezerwacjaSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(uzytkownik=self.request.user)
 
 class SerwisViewSet(viewsets.ModelViewSet):
     queryset = Serwis.objects.all()

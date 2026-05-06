@@ -1,5 +1,227 @@
+<style>
+    #serwis-content h2 {
+        margin-bottom: 18px;
+    }
+    #dodaj-serwis-btn {
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 22px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 18px;
+        transition: background 0.2s;
+    }
+    #dodaj-serwis-btn:hover {
+        background: #0056b3;
+    }
+    #formularz-serwis {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 18px 24px 10px 24px;
+        margin-bottom: 24px;
+        max-width: 400px;
+    }
+    #serwis-form label {
+        display: block;
+        margin-top: 10px;
+        font-weight: 500;
+    }
+    #serwis-form input, #serwis-form select {
+        width: 100%;
+        padding: 7px 8px;
+        margin-top: 3px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+    #serwis-form button {
+        margin-top: 16px;
+        margin-right: 10px;
+        padding: 8px 18px;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        background: #007bff;
+        color: #fff;
+        transition: background 0.2s;
+    }
+    #serwis-form button[type="button"] {
+        background: #adb5bd;
+        color: #222;
+    }
+    #serwis-form button[type="button"]:hover {
+        background: #868e96;
+    }
+    #serwis-form button[type="submit"]:hover {
+        background: #0056b3;
+    }
+    #lista-serwis table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px #e9ecef;
+    }
+    #lista-serwis th, #lista-serwis td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #e0e0e0;
+        text-align: left;
+    }
+    #lista-serwis th {
+        background: #f1f3f5;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    #lista-serwis tr:last-child td {
+        border-bottom: none;
+    }
+    #lista-serwis select {
+        padding: 5px 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+    }
+    #lista-serwis button {
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #lista-serwis button:hover {
+        background: #a71d2a;
+    }
+</style>
 <div id="serwis-content" class="tab-content">
     <h2>Serwis</h2>
-    <button id="dodaj-serwis-btn">Dodaj zgłoszenie serwisowe</button>
-    <!-- Tutaj pojawi się lista zgłoszeń serwisowych i funkcjonalności -->
+    <button id="dodaj-serwis-btn" onclick="document.getElementById('formularz-serwis').style.display='block'">Dodaj zgłoszenie serwisowe</button>
+    <div id="formularz-serwis" style="display:none;">
+        <form id="serwis-form">
+            <label for="sprzet-serwis">Sprzęt:</label>
+            <select id="sprzet-serwis" name="sprzet" required></select>
+            <label for="data-zgloszenia">Data zgłoszenia:</label>
+            <input type="datetime-local" id="data-zgloszenia" name="data_zgloszenia" required>
+            <label for="opis-serwis">Opis:</label>
+            <input type="text" id="opis-serwis" name="opis" required>
+            <label for="status-serwis">Status:</label>
+            <select id="status-serwis" name="status" required>
+                <option value="nowe">nowe</option>
+                <option value="w trakcie">w trakcie</option>
+                <option value="zakończone">zakończone</option>
+            </select>
+            <button type="submit">Dodaj</button>
+            <button type="button" onclick="document.getElementById('formularz-serwis').style.display='none'">Anuluj</button>
+        </form>
+    </div>
+    <div id="lista-serwis"></div>
 </div>
+<script>
+// Załaduj sprzęt do formularza serwisowego
+async function zaladujSprzetSerwis() {
+    const res = await fetch('/api/sprzet/');
+    const data = await res.json();
+    const select = document.getElementById('sprzet-serwis');
+    select.innerHTML = '';
+    data.forEach(s => {
+        const option = document.createElement('option');
+        option.value = s.id;
+        option.textContent = s.nazwa;
+        select.appendChild(option);
+    });
+}
+
+// Obsługa formularza dodawania zgłoszenia serwisowego
+document.getElementById('serwis-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const sprzet = document.getElementById('sprzet-serwis').value;
+    const data_zgloszenia = document.getElementById('data-zgloszenia').value;
+    const opis = document.getElementById('opis-serwis').value;
+    const status = document.getElementById('status-serwis').value;
+    const res = await fetch('/api/serwis/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ sprzet, data_zgloszenia, opis, status })
+    });
+    if (res.ok) {
+        alert('Zgłoszenie dodane!');
+        document.getElementById('formularz-serwis').style.display = 'none';
+        pokazSerwis();
+    } else {
+        alert('Błąd dodawania zgłoszenia!');
+    }
+});
+
+// Wyświetlanie listy zgłoszeń serwisowych
+async function pokazSerwis() {
+    const res = await fetch('/api/serwis/');
+    const data = await res.json();
+    const kontener = document.getElementById('lista-serwis');
+    kontener.innerHTML = '<table><tr><th>Sprzęt</th><th>Data zgłoszenia</th><th>Opis</th><th>Status</th><th>Akcje</th></tr>' +
+        data.map(s => `<tr><td>${s.sprzet}</td><td>${s.data_zgloszenia ? s.data_zgloszenia.replace('T',' ').slice(0,16) : ''}</td><td>${s.opis}</td><td><select onchange="zmienStatusSerwis(${s.id}, this.value)">${['nowe','w trakcie','zakończone'].map(opt => `<option value="${opt}"${s.status===opt?' selected':''}>${opt}</option>`).join('')}</select></td><td><button onclick="usunSerwis(${s.id})">Usuń</button></td></tr>`).join('') + '</table>';
+}
+
+// Usuwanie zgłoszenia serwisowego
+async function usunSerwis(id) {
+    if (!confirm('Na pewno usunąć zgłoszenie?')) return;
+    const res = await fetch('/api/serwis/' + id + '/', {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    });
+    if (res.ok) {
+        pokazSerwis();
+    } else {
+        alert('Błąd usuwania!');
+    }
+}
+
+// Zmiana statusu zgłoszenia serwisowego
+async function zmienStatusSerwis(id, status) {
+    const res = await fetch('/api/serwis/' + id + '/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ status })
+    });
+    if (!res.ok) {
+        alert('Błąd zmiany statusu!');
+        pokazSerwis();
+    }
+}
+
+// CSRF helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    zaladujSprzetSerwis();
+    pokazSerwis();
+});
+</script>

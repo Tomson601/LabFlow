@@ -18,12 +18,11 @@ class SprzetSerializer(serializers.ModelSerializer):
 
 class RezerwacjaSerializer(serializers.ModelSerializer):
     sprzet_nazwa = serializers.CharField(source='sprzet.nazwa', read_only=True)
-    start = serializers.DateTimeField(source='data_rozpoczecia')
-    end = serializers.DateTimeField(source='data_zakonczenia')
+    uzytkownik = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Rezerwacja
-        fields = ['id', 'sprzet', 'sprzet_nazwa', 'start', 'end', 'status']
+        fields = ['id', 'sprzet', 'sprzet_nazwa', 'data_rozpoczecia', 'data_zakonczenia', 'status', 'uzytkownik']
 
 class SerwisSerializer(serializers.ModelSerializer):
     class Meta:

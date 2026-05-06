@@ -1,5 +1,229 @@
+<style>
+    #sprzet-content h2 {
+        margin-bottom: 18px;
+    }
+    #dodaj-sprzet-btn {
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 22px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 18px;
+        transition: background 0.2s;
+    }
+    #dodaj-sprzet-btn:hover {
+        background: #0056b3;
+    }
+    #formularz-sprzet {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 18px 24px 10px 24px;
+        margin-bottom: 24px;
+        max-width: 400px;
+    }
+    #sprzet-form label {
+        display: block;
+        margin-top: 10px;
+        font-weight: 500;
+    }
+    #sprzet-form input, #sprzet-form select {
+        width: 100%;
+        padding: 7px 8px;
+        margin-top: 3px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+    #sprzet-form button {
+        margin-top: 16px;
+        margin-right: 10px;
+        padding: 8px 18px;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        background: #007bff;
+        color: #fff;
+        transition: background 0.2s;
+    }
+    #sprzet-form button[type="button"] {
+        background: #adb5bd;
+        color: #222;
+    }
+    #sprzet-form button[type="button"]:hover {
+        background: #868e96;
+    }
+    #sprzet-form button[type="submit"]:hover {
+        background: #0056b3;
+    }
+    #lista-sprzetu table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px #e9ecef;
+    }
+    #lista-sprzetu th, #lista-sprzetu td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #e0e0e0;
+        text-align: left;
+    }
+    #lista-sprzetu th {
+        background: #f1f3f5;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    #lista-sprzetu tr:last-child td {
+        border-bottom: none;
+    }
+    #lista-sprzetu select {
+        padding: 5px 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+    }
+    #lista-sprzetu button {
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #lista-sprzetu button:hover {
+        background: #a71d2a;
+    }
+</style>
 <div id="sprzet-content" class="tab-content">
     <h2>Sprzęt</h2>
-    <button id="dodaj-sprzet-btn">Dodaj sprzęt</button>
-    <!-- Lista sprzętu pojawi się tutaj -->
+    <button id="dodaj-sprzet-btn" onclick="document.getElementById('formularz-sprzet').style.display='block'">Dodaj sprzęt</button>
+    <div id="formularz-sprzet" style="display:none;">
+        <form id="sprzet-form">
+            <label for="nazwa">Nazwa:</label>
+            <input type="text" id="nazwa" name="nazwa" required>
+            <label for="kategoria">Kategoria:</label>
+            <input type="text" id="kategoria" name="kategoria" required>
+            <label for="status">Status:</label>
+            <select id="status" name="status" required>
+                <option value="dostępny">dostępny</option>
+                <option value="zarezerwowany">zarezerwowany</option>
+                <option value="serwis">serwis</option>
+            </select>
+            <label for="laboratorium">Laboratorium:</label>
+            <select id="laboratorium-sprzet" name="laboratorium" required></select>
+            <button type="submit">Dodaj</button>
+            <button type="button" onclick="document.getElementById('formularz-sprzet').style.display='none'">Anuluj</button>
+        </form>
+    </div>
+    <div id="lista-sprzetu"></div>
 </div>
+<script>
+// Załaduj laboratoria do formularza sprzętu
+async function zaladujLaboratoriaSprzet() {
+    const res = await fetch('/api/laboratoria/');
+    const data = await res.json();
+    const select = document.getElementById('laboratorium-sprzet');
+    select.innerHTML = '';
+    data.forEach(lab => {
+        const option = document.createElement('option');
+        option.value = lab.id;
+        option.textContent = lab.nazwa;
+        select.appendChild(option);
+    });
+}
+
+// Obsługa formularza dodawania sprzętu
+document.getElementById('sprzet-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const nazwa = document.getElementById('nazwa').value;
+    const kategoria = document.getElementById('kategoria').value;
+    const status = document.getElementById('status').value;
+    const laboratorium = document.getElementById('laboratorium-sprzet').value;
+    const res = await fetch('/api/sprzet/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            nazwa, kategoria, status, laboratorium
+        })
+    });
+    if (res.ok) {
+        alert('Sprzęt dodany!');
+        document.getElementById('formularz-sprzet').style.display = 'none';
+        pokazSprzet();
+    } else {
+        alert('Błąd dodawania sprzętu!');
+    }
+});
+
+// Wyświetlanie listy sprzętu
+async function pokazSprzet() {
+    const res = await fetch('/api/sprzet/');
+    const data = await res.json();
+    const kontener = document.getElementById('lista-sprzetu');
+    kontener.innerHTML = '<table><tr><th>Nazwa</th><th>Kategoria</th><th>Status</th><th>Laboratorium</th><th>Akcje</th></tr>' +
+        data.map(s => `<tr><td>${s.nazwa}</td><td>${s.kategoria}</td><td><select onchange="zmienStatusSprzetu(${s.id}, this.value)">${['dostępny','zarezerwowany','serwis'].map(opt => `<option value="${opt}"${s.status===opt?' selected':''}>${opt}</option>`).join('')}</select></td><td>${s.laboratorium}</td><td><button onclick="usunSprzet(${s.id})">Usuń</button></td></tr>`).join('') + '</table>';
+}
+
+// Usuwanie sprzętu
+async function usunSprzet(id) {
+    if (!confirm('Na pewno usunąć sprzęt?')) return;
+    const res = await fetch('/api/sprzet/' + id + '/', {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    });
+    if (res.ok) {
+        pokazSprzet();
+    } else {
+        alert('Błąd usuwania!');
+    }
+}
+
+// Zmiana statusu sprzętu
+async function zmienStatusSprzetu(id, status) {
+    const res = await fetch('/api/sprzet/' + id + '/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ status })
+    });
+    if (!res.ok) {
+        alert('Błąd zmiany statusu!');
+        pokazSprzet();
+    }
+}
+
+// CSRF helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    zaladujLaboratoriaSprzet();
+    pokazSprzet();
+});
+</script>

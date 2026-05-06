@@ -7,6 +7,7 @@
 
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
     <style>
         body {
@@ -90,8 +91,8 @@
 
                 const events = data.map(item => ({
                     title: 'Rezerwacja: ' + (item.sprzet_nazwa || item.sprzet),
-                    start: item.start,
-                    end: item.end,
+                    start: item.data_rozpoczecia,
+                    end: item.data_zakonczenia,
                     color: getColor(item.status),
                     extendedProps: {
                         status: item.status
@@ -160,7 +161,17 @@
 
 <body>
     <div class="container">
-        <h1>LabFlow</h1>
+        <div style="display: flex; align-items: center; gap: 18px; margin-bottom: 18px;">
+            <img src="/static/logo.png" alt="LabFlow logo" style="height: 60px;">
+            <div>
+                <div style="font-size: 2.5rem; font-weight: 700; color: #222; letter-spacing: -1px;">
+                    Lab<span style="color: #2196f3;">Flow</span>
+                </div>
+                <div style="font-size: 1.15rem; color: #6c7a89; margin-top: 2px; font-weight: 400;">
+                    Zarządzaj laboratorium z łatwością
+                </div>
+            </div>
+        </div>
 
         <div class="tabs">
             <button class="tab" id="kalendarz-tab" onclick="showTab('kalendarz')">Kalendarz</button>

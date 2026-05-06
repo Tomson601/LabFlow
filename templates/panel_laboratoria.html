@@ -1,6 +1,223 @@
+<style>
+    #laboratoria-content h2 {
+        margin-bottom: 18px;
+    }
+    #dodaj-laboratorium-btn {
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 22px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 18px;
+        transition: background 0.2s;
+    }
+    #dodaj-laboratorium-btn:hover {
+        background: #0056b3;
+    }
+    #formularz-laboratorium {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 18px 24px 10px 24px;
+        margin-bottom: 24px;
+        max-width: 400px;
+    }
+    #laboratorium-form label {
+        display: block;
+        margin-top: 10px;
+        font-weight: 500;
+    }
+    #laboratorium-form input {
+        width: 100%;
+        padding: 7px 8px;
+        margin-top: 3px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+    #laboratorium-form button {
+        margin-top: 16px;
+        margin-right: 10px;
+        padding: 8px 18px;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        background: #007bff;
+        color: #fff;
+        transition: background 0.2s;
+    }
+    #laboratorium-form button[type="button"] {
+        background: #adb5bd;
+        color: #222;
+    }
+    #laboratorium-form button[type="button"]:hover {
+        background: #868e96;
+    }
+    #laboratorium-form button[type="submit"]:hover {
+        background: #0056b3;
+    }
+    #lista-laboratoriow table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px #e9ecef;
+    }
+    #lista-laboratoriow th, #lista-laboratoriow td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #e0e0e0;
+        text-align: left;
+    }
+    #lista-laboratoriow th {
+        background: #f1f3f5;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    #lista-laboratoriow tr:last-child td {
+        border-bottom: none;
+    }
+    #lista-laboratoriow input {
+        padding: 5px 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    #lista-laboratoriow button {
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #lista-laboratoriow button:hover {
+        background: #a71d2a;
+    }
+</style>
 <div id="laboratoria-content" class="tab-content">
     <h2>Laboratoria</h2>
-    <button id="dodaj-laboratorium-btn">Dodaj laboratorium</button>
-    <!-- Tutaj pojawi się lista laboratoriów i funkcjonalności -->
-    <!-- Lista laboratoriów pojawi się tutaj -->
+    <button id="dodaj-laboratorium-btn" onclick="document.getElementById('formularz-laboratorium').style.display='block'">Dodaj laboratorium</button>
+    <div id="formularz-laboratorium" style="display:none;">
+        <form id="laboratorium-form">
+            <label for="nazwa-lab">Nazwa:</label>
+            <input type="text" id="nazwa-lab" name="nazwa" required>
+            <label for="lokalizacja-lab">Lokalizacja:</label>
+            <input type="text" id="lokalizacja-lab" name="lokalizacja" required>
+            <label for="opis-lab">Opis:</label>
+            <input type="text" id="opis-lab" name="opis">
+            <button type="submit">Dodaj</button>
+            <button type="button" onclick="document.getElementById('formularz-laboratorium').style.display='none'">Anuluj</button>
+        </form>
+    </div>
+    <div id="lista-laboratoriow"></div>
 </div>
+<script>
+// Obsługa formularza dodawania laboratorium
+document.getElementById('laboratorium-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const nazwa = document.getElementById('nazwa-lab').value;
+    const lokalizacja = document.getElementById('lokalizacja-lab').value;
+    const opis = document.getElementById('opis-lab').value;
+    const res = await fetch('/api/laboratoria/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ nazwa, lokalizacja, opis })
+    });
+    if (res.ok) {
+        alert('Laboratorium dodane!');
+        document.getElementById('formularz-laboratorium').style.display = 'none';
+        pokazLaboratoria();
+    } else {
+        alert('Błąd dodawania laboratorium!');
+    }
+});
+
+// Wyświetlanie listy laboratoriów
+async function pokazLaboratoria() {
+    const res = await fetch('/api/laboratoria/');
+    const data = await res.json();
+    const kontener = document.getElementById('lista-laboratoriow');
+    kontener.innerHTML = '<table><tr><th>Nazwa</th><th>Lokalizacja</th><th>Opis</th><th>Akcje</th></tr>' +
+        data.map(lab => `<tr><td>${lab.nazwa}</td><td><input value="${lab.lokalizacja}" onchange="zmienLokalizacje(${lab.id}, this.value)"></td><td><input value="${lab.opis || ''}" onchange="zmienOpis(${lab.id}, this.value)"></td><td><button onclick="usunLaboratorium(${lab.id})">Usuń</button></td></tr>`).join('') + '</table>';
+}
+
+// Usuwanie laboratorium
+async function usunLaboratorium(id) {
+    if (!confirm('Na pewno usunąć laboratorium?')) return;
+    const res = await fetch('/api/laboratoria/' + id + '/', {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    });
+    if (res.ok) {
+        pokazLaboratoria();
+    } else {
+        alert('Błąd usuwania!');
+    }
+}
+
+// Zmiana lokalizacji laboratorium
+async function zmienLokalizacje(id, lokalizacja) {
+    const res = await fetch('/api/laboratoria/' + id + '/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ lokalizacja })
+    });
+    if (!res.ok) {
+        alert('Błąd zmiany lokalizacji!');
+        pokazLaboratoria();
+    }
+}
+
+// Zmiana opisu laboratorium
+async function zmienOpis(id, opis) {
+    const res = await fetch('/api/laboratoria/' + id + '/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ opis })
+    });
+    if (!res.ok) {
+        alert('Błąd zmiany opisu!');
+        pokazLaboratoria();
+    }
+}
+
+// CSRF helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    pokazLaboratoria();
+});
+</script>

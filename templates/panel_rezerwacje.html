@@ -1,5 +1,200 @@
+<style>
+    #rezerwacje-content h2 {
+        margin-bottom: 18px;
+    }
+    #dodaj-rezerwacje-btn {
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 22px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 18px;
+        transition: background 0.2s;
+    }
+    #dodaj-rezerwacje-btn:hover {
+        background: #0056b3;
+    }
+    #formularz-rezerwacji {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 18px 24px 10px 24px;
+        margin-bottom: 24px;
+        max-width: 400px;
+    }
+    #rezerwacja-form label {
+        display: block;
+        margin-top: 10px;
+        font-weight: 500;
+    }
+    #rezerwacja-form input, #rezerwacja-form select {
+        width: 100%;
+        padding: 7px 8px;
+        margin-top: 3px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+    #rezerwacja-form button {
+        margin-top: 16px;
+        margin-right: 10px;
+        padding: 8px 18px;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        background: #007bff;
+        color: #fff;
+        transition: background 0.2s;
+    }
+    #rezerwacja-form button[type="button"] {
+        background: #adb5bd;
+        color: #222;
+    }
+    #rezerwacja-form button[type="button"]:hover {
+        background: #868e96;
+    }
+    #rezerwacja-form button[type="submit"]:hover {
+        background: #0056b3;
+    }
+    #lista-rezerwacji table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px #e9ecef;
+    }
+    #lista-rezerwacji th, #lista-rezerwacji td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #e0e0e0;
+        text-align: left;
+    }
+    #lista-rezerwacji th {
+        background: #f1f3f5;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    #lista-rezerwacji tr:last-child td {
+        border-bottom: none;
+    }
+</style>
 <div id="rezerwacje-content" class="tab-content">
     <h2>Lista rezerwacji</h2>
-    <button id="dodaj-rezerwacje-btn">Dodaj rezerwację</button>
-    <!-- Lista rezerwacji pojawi się tutaj -->
+    <button id="dodaj-rezerwacje-btn" onclick="document.getElementById('formularz-rezerwacji').style.display='block'">Dodaj rezerwację</button>
+    <div id="formularz-rezerwacji" style="display:none;">
+        <form id="rezerwacja-form">
+            <label for="laboratorium">Laboratorium:</label>
+            <select id="laboratorium" name="laboratorium" required></select>
+            <label for="sprzet">Sprzęt:</label>
+            <select id="sprzet" name="sprzet" required></select>
+            <label for="data_rozpoczecia">Data rozpoczęcia:</label>
+            <input type="datetime-local" id="data_rozpoczecia" name="data_rozpoczecia" required>
+            <label for="data_zakonczenia">Data zakończenia:</label>
+            <input type="datetime-local" id="data_zakonczenia" name="data_zakonczenia" required>
+            <button type="submit">Zarezerwuj</button>
+            <button type="button" onclick="document.getElementById('formularz-rezerwacji').style.display='none'">Anuluj</button>
+        </form>
+    </div>
+    <div id="lista-rezerwacji"></div>
 </div>
+<script>
+// Załaduj laboratoria i sprzęt do formularza
+async function zaladujLaboratoria() {
+    const res = await fetch('/api/laboratoria/');
+    const data = await res.json();
+    const select = document.getElementById('laboratorium');
+    select.innerHTML = '';
+    data.forEach(lab => {
+        const option = document.createElement('option');
+        option.value = lab.id;
+        option.textContent = lab.nazwa;
+        select.appendChild(option);
+    });
+    zaladujSprzet();
+}
+async function zaladujSprzet() {
+    const labId = document.getElementById('laboratorium').value;
+    const res = await fetch('/api/sprzet/?laboratorium=' + labId);
+    const data = await res.json();
+    const select = document.getElementById('sprzet');
+    select.innerHTML = '';
+    data.forEach(s => {
+        const option = document.createElement('option');
+        option.value = s.id;
+        option.textContent = s.nazwa;
+        select.appendChild(option);
+    });
+}
+document.getElementById('laboratorium').addEventListener('change', zaladujSprzet);
+
+// Obsługa formularza rezerwacji
+document.getElementById('rezerwacja-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const sprzet = document.getElementById('sprzet').value;
+    // Zamiana na UTC ISO string
+    function toUTC(val) {
+        if (!val) return null;
+        // val: "2026-05-05T12:00"
+        const d = new Date(val);
+        return d.toISOString();
+    }
+    const data_rozpoczecia = toUTC(document.getElementById('data_rozpoczecia').value);
+    const data_zakonczenia = toUTC(document.getElementById('data_zakonczenia').value);
+    const res = await fetch('/api/rezerwacje/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            sprzet: sprzet,
+            data_rozpoczecia: data_rozpoczecia,
+            data_zakonczenia: data_zakonczenia,
+            status: 'oczekująca'
+        })
+    });
+    if (res.ok) {
+        alert('Rezerwacja złożona!');
+        document.getElementById('formularz-rezerwacji').style.display = 'none';
+        pokazRezerwacje();
+    } else {
+        alert('Błąd rezerwacji!');
+    }
+});
+
+// Wyświetlanie listy rezerwacji
+async function pokazRezerwacje() {
+    const res = await fetch('/api/rezerwacje/');
+    const data = await res.json();
+    const kontener = document.getElementById('lista-rezerwacji');
+    kontener.innerHTML = '<table><tr><th>Sprzęt</th><th>Od</th><th>Do</th><th>Status</th></tr>' +
+        data.map(r => `<tr><td>${r.sprzet_nazwa}</td><td>${r.data_rozpoczecia ? r.data_rozpoczecia.replace('T',' ').slice(0,16) : ''}</td><td>${r.data_zakonczenia ? r.data_zakonczenia.replace('T',' ').slice(0,16) : ''}</td><td>${r.status}</td></tr>`).join('') + '</table>';
+}
+
+// CSRF helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    zaladujLaboratoria();
+    pokazRezerwacje();
+});
+</script>
