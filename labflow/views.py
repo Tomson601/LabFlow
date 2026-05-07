@@ -1,10 +1,10 @@
-
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.views import View
+from labflow.models import Uzytkownik
 
 # ...existing imports and viewsets...
 
@@ -23,6 +23,50 @@ def login_view(request):
         else:
             return render(request, 'login.html', {'form': {'errors': True}})
     return render(request, 'login.html', {'form': {}})
+
+@csrf_protect
+def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('/panel/')
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        password_confirm = request.POST.get('password_confirm')
+        imie = request.POST.get('imie')
+        nazwisko = request.POST.get('nazwisko')
+        
+        errors = []
+        
+        if password != password_confirm:
+            errors.append('Hasła się nie zgadzają.')
+        
+        if Uzytkownik.objects.filter(email=email).exists():
+            errors.append('Email już jest zarejestrowany.')
+        
+        if Uzytkownik.objects.filter(username=username).exists():
+            errors.append('Nazwa użytkownika już istnieje.')
+        
+        if len(password) < 6:
+            errors.append('Hasło musi mieć co najmniej 6 znaków.')
+        
+        if errors:
+            return render(request, 'register.html', {'errors': errors})
+        
+        user = Uzytkownik.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            imie=imie,
+            nazwisko=nazwisko,
+            rola='uzytkownik'
+        )
+        
+        login(request, user)
+        return redirect('/panel/')
+    
+    return render(request, 'register.html', {})
 
 @login_required(login_url='/')
 def panel_view(request):

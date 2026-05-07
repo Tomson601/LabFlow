@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from labflow.views import login_view, panel_view, logout_view
+from labflow.views import login_view, panel_view, logout_view, register_view
 from rest_framework import routers
 from labflow import views
 from django.conf import settings
@@ -15,6 +15,7 @@ router.register(r'serwis', views.SerwisViewSet)
 
 urlpatterns = [
     path('', login_view, name='login'),
+    path('register/', register_view, name='register'),
     path('panel/', panel_view, name='panel'),
     path('logout/', logout_view, name='logout'),
     path('admin/', admin.site.urls),
