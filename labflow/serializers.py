@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Laboratorium, Uzytkownik, Sprzet, Rezerwacja, Serwis
 
+
 class LaboratoriumSerializer(serializers.ModelSerializer):
     class Meta:
         model = Laboratorium

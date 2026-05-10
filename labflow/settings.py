@@ -83,7 +83,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'labflow2',
-        'HOST': 'DESKTOP-SAPF18C\SQLEXPRESS',
+        'HOST': 'LenovoLOQ\SQLEXPRESS',
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
             'trusted_connection': 'yes',
