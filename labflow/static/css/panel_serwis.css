@@ -1,0 +1,121 @@
+/* Panel Serwis Module */
+
+#serwis-content h2 {
+    margin-bottom: 18px;
+}
+
+#dodaj-serwis-btn {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 22px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 18px;
+    transition: background 0.2s;
+}
+
+#dodaj-serwis-btn:hover {
+    background: #0056b3;
+}
+
+#formularz-serwis {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px 24px 10px 24px;
+    margin-bottom: 24px;
+    max-width: 400px;
+}
+
+#serwis-form label {
+    display: block;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+#serwis-form input, #serwis-form select {
+    width: 100%;
+    padding: 7px 8px;
+    margin-top: 3px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+#serwis-form button {
+    margin-top: 16px;
+    margin-right: 10px;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #007bff;
+    color: #fff;
+    transition: background 0.2s;
+}
+
+#serwis-form button[type="button"] {
+    background: #adb5bd;
+    color: #222;
+}
+
+#serwis-form button[type="button"]:hover {
+    background: #868e96;
+}
+
+#serwis-form button[type="submit"]:hover {
+    background: #0056b3;
+}
+
+#lista-serwis table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px #e9ecef;
+}
+
+#lista-serwis th, #lista-serwis td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: left;
+}
+
+#lista-serwis th {
+    background: #f1f3f5;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+#lista-serwis tr:last-child td {
+    border-bottom: none;
+}
+
+#lista-serwis select {
+    padding: 5px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+#lista-serwis button {
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#lista-serwis button:hover {
+    background: #a71d2a;
+}

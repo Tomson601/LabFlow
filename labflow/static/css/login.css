@@ -3,11 +3,14 @@ body {
     background: linear-gradient(120deg, #007bff 0%, #6dd5ed 100%);
     min-height: 100vh;
     margin: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .login-container {
     width: 370px;
-    margin: 100px auto;
     background: #fff;
     padding: 40px 30px 30px 30px;
     border-radius: 12px;

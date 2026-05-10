@@ -1,13 +1,20 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
 body {
     font-family: 'Roboto', Arial, sans-serif;
     background: linear-gradient(120deg, #007bff 0%, #6dd5ed 100%);
-    min-height: 100vh;
-    margin: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .register-container {
     width: 420px;
-    margin: 50px auto;
     background: #fff;
     padding: 40px 30px 30px 30px;
     border-radius: 12px;

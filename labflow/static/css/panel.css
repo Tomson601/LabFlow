@@ -1,13 +1,21 @@
+html {
+    min-height: 100%;
+    overflow-x: hidden;
+}
+
+
 body {
     font-family: 'Roboto', Arial, sans-serif;
     background: linear-gradient(120deg, #007bff 0%, #6dd5ed 100%);
-    min-height: 100vh;
+    min-height: 100%;
     margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .container {
     width: 950px;
-    margin: 40px auto;
+    margin: 40px auto 20px auto;
     background: #fff;
     padding: 36px;
     border-radius: 14px;
