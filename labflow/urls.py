@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from labflow.views import login_view, panel_view, logout_view, register_view
+from labflow.views import login_view, panel_view, logout_view, register_view, admin_login_view, admin_panel_view
 from rest_framework import routers
 from labflow import views
 from django.conf import settings
@@ -18,6 +18,8 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('panel/', panel_view, name='panel'),
     path('logout/', logout_view, name='logout'),
+    path('admin-login/', admin_login_view, name='admin-login'),
+    path('admin-panel/', admin_panel_view, name='admin-panel'),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls')),

@@ -1,12 +1,37 @@
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
-from django.utils.decorators import method_decorator
-from django.views import View
 from labflow.models import Uzytkownik
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
+from .models import Laboratorium, Uzytkownik, Sprzet, Rezerwacja, Serwis
+from .serializers import (
+    LaboratoriumSerializer, UzytkownikSerializer, SprzetSerializer,
+    RezerwacjaSerializer, SerwisSerializer
+)
 
-# ...existing imports and viewsets...
+@csrf_protect
+def admin_login_view(request):
+    if request.user.is_authenticated and request.user.is_superuser:
+        return redirect('/admin-panel/')
+    error = None
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_superuser:
+            login(request, user)
+            return redirect('/admin-panel/')
+        else:
+            error = 'Nieprawidłowy login, hasło lub brak uprawnień administratora.'
+    return render(request, 'admin_login.html', {'error': error})
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/admin-login/')
+def admin_panel_view(request):
+    return render(request, 'admin_panel.html')
 
 
 @csrf_protect
@@ -75,12 +100,7 @@ def panel_view(request):
 def logout_view(request):
     logout(request)
     return redirect('/')
-from rest_framework import viewsets, permissions
-from .models import Laboratorium, Uzytkownik, Sprzet, Rezerwacja, Serwis
-from .serializers import (
-    LaboratoriumSerializer, UzytkownikSerializer, SprzetSerializer,
-    RezerwacjaSerializer, SerwisSerializer
-)
+
 
 class LaboratoriumViewSet(viewsets.ModelViewSet):
     queryset = Laboratorium.objects.all()
@@ -102,6 +122,26 @@ class RezerwacjaViewSet(viewsets.ModelViewSet):
     queryset = Rezerwacja.objects.all()
     serializer_class = RezerwacjaSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        data_rozpoczecia = request.data.get('data_rozpoczecia')
+        data_zakonczenia = request.data.get('data_zakonczenia')
+        sprzet_id = request.data.get('sprzet')
+
+        # Sprawdź czy są wymagane dane
+        if not (data_rozpoczecia and data_zakonczenia and sprzet_id):
+            return Response({'error': 'Brak wymaganych danych.'}, status=400)
+
+        # Sprawdź czy istnieje konflikt rezerwacji
+        konflikt = Rezerwacja.objects.filter(
+            sprzet_id=sprzet_id,
+            data_rozpoczecia__lt=data_zakonczenia,
+            data_zakonczenia__gt=data_rozpoczecia
+        ).exists()
+        if konflikt:
+            return Response({'error': 'Istnieje już rezerwacja na ten sprzęt w podanym czasie.'}, status=400)
+
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(uzytkownik=self.request.user)

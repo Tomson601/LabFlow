@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>LabFlow Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/login.css">
+    <style>
+        .admin-panel-container {
+            width: 600px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 40px 30px 30px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px #007bff33;
+        }
+        h2 { text-align: center; color: #007bff; }
+        .logout-btn {
+            display: block;
+            margin: 20px auto 0 auto;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 32px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #007bff33;
+            transition: background 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+        .logout-btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="admin-panel-container">
+        <h2>LabFlow Admin Panel</h2>
+        <p>Witaj, {{ request.user.username }}! Jesteś zalogowany jako administrator.</p>
+        <a href="/logout/" class="logout-btn">Wyloguj się</a>
+    </div>
+</body>
+</html>
