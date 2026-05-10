@@ -45,8 +45,20 @@ async function pokazSprzet() {
     const res = await fetch('/api/sprzet/');
     const data = await res.json();
     const kontener = document.getElementById('lista-sprzetu');
+    // Sprawdź uprawnienia użytkownika (rola przekazana przez Django do window.currentUserRole)
+    const userRole = window.currentUserRole || 'uzytkownik';
     kontener.innerHTML = '<table><tr><th>Nazwa</th><th>Kategoria</th><th>Status</th><th>Laboratorium</th><th>Akcje</th></tr>' +
-        data.map(s => `<tr><td>${s.nazwa}</td><td>${s.kategoria}</td><td><select onchange="zmienStatusSprzetu(${s.id}, this.value)">${['dostępny','zarezerwowany','serwis'].map(opt => `<option value="${opt}"${s.status===opt?' selected':''}>${opt}</option>`).join('')}</select></td><td>${s.laboratorium}</td><td><button onclick="usunSprzet(${s.id})">Usuń</button></td></tr>`).join('') + '</table>';
+        data.map(s => {
+            let statusClass = '';
+            if (s.status === 'dostępny') statusClass = 'status-dostepny';
+            else if (s.status === 'zarezerwowany') statusClass = 'status-zarezerwowany';
+            else if (s.status === 'serwis') statusClass = 'status-serwis';
+            let selectHTML = '';
+            if (userRole === 'admin' || userRole === 'pracownik') {
+                selectHTML = ` <select style="margin-left:8px;" onchange="zmienStatusSprzetu(${s.id}, this.value)">${['dostępny','zarezerwowany','serwis'].map(opt => `<option value="${opt}"${s.status===opt?' selected':''}>${opt}</option>`).join('')}</select>`;
+            }
+            return `<tr><td>${s.nazwa}</td><td>${s.kategoria}</td><td><span class="${statusClass}">${s.status}</span>${selectHTML}</td><td>${s.laboratorium}</td><td><button onclick="usunSprzet(${s.id})">Usuń</button></td></tr>`;
+        }).join('') + '</table>';
 }
 
 // Usuwanie sprzętu

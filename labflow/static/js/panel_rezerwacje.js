@@ -71,8 +71,30 @@ async function pokazRezerwacje() {
     const res = await fetch('/api/rezerwacje/');
     const data = await res.json();
     const kontener = document.getElementById('lista-rezerwacji');
-    kontener.innerHTML = '<table><tr><th>Sprzęt</th><th>Od</th><th>Do</th><th>Status</th></tr>' +
-        data.map(r => `<tr><td>${r.sprzet_nazwa}</td><td>${r.data_rozpoczecia ? r.data_rozpoczecia.replace('T',' ').slice(0,16) : ''}</td><td>${r.data_zakonczenia ? r.data_zakonczenia.replace('T',' ').slice(0,16) : ''}</td><td>${r.status}</td></tr>`).join('') + '</table>';
+    const userId = window.currentUserId;
+    kontener.innerHTML = '<table><tr><th>Sprzęt</th><th>Od</th><th>Do</th><th>Status</th><th>Akcje</th></tr>' +
+        data.map(r => {
+            let akcje = '';
+            if (userId && Number(r.uzytkownik) === Number(userId)) {
+                akcje = `<button onclick="anulujRezerwacje(${r.id})">Anuluj</button>`;
+            }
+            return `<tr><td>${r.sprzet_nazwa}</td><td>${r.data_rozpoczecia ? r.data_rozpoczecia.replace('T',' ').slice(0,16) : ''}</td><td>${r.data_zakonczenia ? r.data_zakonczenia.replace('T',' ').slice(0,16) : ''}</td><td>${r.status}</td><td>${akcje}</td></tr>`;
+        }).join('') + '</table>';
+
+}
+
+// Anulowanie rezerwacji
+async function anulujRezerwacje(id) {
+    if (!confirm('Czy na pewno chcesz anulować tę rezerwację?')) return;
+    const res = await fetch('/api/rezerwacje/' + id + '/', {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    });
+    if (res.ok) {
+        pokazRezerwacje();
+    } else {
+        alert('Błąd anulowania rezerwacji!');
+    }
 }
 
 window.addEventListener('DOMContentLoaded', () => {

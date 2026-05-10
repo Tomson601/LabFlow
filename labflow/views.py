@@ -1,5 +1,4 @@
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -31,7 +30,29 @@ def admin_login_view(request):
 
 @user_passes_test(lambda u: u.is_superuser, login_url='/admin-login/')
 def admin_panel_view(request):
-    return render(request, 'admin_panel.html')
+    # Obsługa zmiany roli użytkownika
+    if request.method == 'POST' and 'user_id' in request.POST and 'rola' in request.POST:
+        user_id = request.POST.get('user_id')
+        rola = request.POST.get('rola')
+        user = Uzytkownik.objects.filter(id=user_id).first()
+        if user and rola in ['student', 'pracownik', 'admin']:
+            user.rola = rola
+            # Jeśli admin, ustaw is_staff, jeśli nie, wyłącz
+            user.is_staff = (rola == 'admin')
+            user.save()
+
+    users = Uzytkownik.objects.all()
+    labs = Laboratorium.objects.all()
+    devices = Sprzet.objects.select_related('laboratorium').all()
+    reservations = Rezerwacja.objects.select_related('sprzet', 'uzytkownik').all()
+    services = Serwis.objects.select_related('sprzet').all()
+    return render(request, 'admin_panel.html', {
+        'users': users,
+        'labs': labs,
+        'devices': devices,
+        'reservations': reservations,
+        'services': services,
+    })
 
 
 @csrf_protect
@@ -102,26 +123,52 @@ def logout_view(request):
     return redirect('/')
 
 
+
+class IsAdminOrPracownik(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and (request.user.rola in ['admin', 'pracownik'] or request.user.is_superuser)
+
 class LaboratoriumViewSet(viewsets.ModelViewSet):
     queryset = Laboratorium.objects.all()
     serializer_class = LaboratoriumSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminOrPracownik()]
+        return [permissions.IsAuthenticated()]
 
 class UzytkownikViewSet(viewsets.ModelViewSet):
     queryset = Uzytkownik.objects.all()
     serializer_class = UzytkownikSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
+
 class SprzetViewSet(viewsets.ModelViewSet):
     queryset = Sprzet.objects.all()
     serializer_class = SprzetSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminOrPracownik()]
+        return [permissions.IsAuthenticated()]
 
 
 class RezerwacjaViewSet(viewsets.ModelViewSet):
+    # Pozwól użytkownikowi anulować (usunąć) tylko swoją rezerwację
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.uzytkownik != request.user and not request.user.is_superuser:
+            return Response({'error': 'Możesz anulować tylko swoją rezerwację.'}, status=403)
+        return super().destroy(request, *args, **kwargs)
+
     queryset = Rezerwacja.objects.all()
     serializer_class = RezerwacjaSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser:
+            return Rezerwacja.objects.all()
+        return Rezerwacja.objects.filter(uzytkownik=user)
 
     def create(self, request, *args, **kwargs):
         data_rozpoczecia = request.data.get('data_rozpoczecia')
@@ -132,7 +179,6 @@ class RezerwacjaViewSet(viewsets.ModelViewSet):
         if not (data_rozpoczecia and data_zakonczenia and sprzet_id):
             return Response({'error': 'Brak wymaganych danych.'}, status=400)
 
-        # Sprawdź czy istnieje konflikt rezerwacji
         konflikt = Rezerwacja.objects.filter(
             sprzet_id=sprzet_id,
             data_rozpoczecia__lt=data_zakonczenia,
@@ -144,7 +190,24 @@ class RezerwacjaViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        serializer.save(uzytkownik=self.request.user)
+        rezerwacja = serializer.save(uzytkownik=self.request.user)
+        # Po utworzeniu rezerwacji ustaw status sprzętu na 'zarezerwowany'
+        sprzet = rezerwacja.sprzet
+        sprzet.status = 'zarezerwowany'
+        sprzet.save()
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        # Po zakończeniu rezerwacji ustaw sprzęt na 'dostępny' jeśli nie ma innych aktywnych rezerwacji
+        instance = self.get_object()
+        if instance.status == 'zakończona':
+            sprzet = instance.sprzet
+            # Sprawdź czy są inne aktywne rezerwacje na ten sprzęt
+            aktywne = Rezerwacja.objects.filter(sprzet=sprzet, status='aktywna').exclude(id=instance.id).exists()
+            if not aktywne:
+                sprzet.status = 'dostępny'
+                sprzet.save()
+        return response
 
 class SerwisViewSet(viewsets.ModelViewSet):
     queryset = Serwis.objects.all()

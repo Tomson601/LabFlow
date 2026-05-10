@@ -1,6 +1,8 @@
 <div id="laboratoria-content" class="tab-content">
     <h2>Laboratoria</h2>
+    {% if request.user.rola == 'admin' or request.user.rola == 'pracownik' or request.user.is_superuser %}
     <button id="dodaj-laboratorium-btn" onclick="document.getElementById('formularz-laboratorium').style.display='block'">Dodaj laboratorium</button>
+    {% endif %}
     <div id="formularz-laboratorium" style="display:none;">
         <form id="laboratorium-form">
             <label for="nazwa-lab">Nazwa:</label>

@@ -2,43 +2,88 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>LabFlow Admin Panel</title>
+    <title>LabFlow ADMIN Panel</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/login.css">
-    <style>
-        .admin-panel-container {
-            width: 600px;
-            margin: 60px auto;
-            background: #fff;
-            padding: 40px 30px 30px 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 24px #007bff33;
-        }
-        h2 { text-align: center; color: #007bff; }
-        .logout-btn {
-            display: block;
-            margin: 20px auto 0 auto;
-            background: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 12px 32px;
-            font-size: 17px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 2px 8px #007bff33;
-            transition: background 0.2s;
-            text-align: center;
-            text-decoration: none;
-        }
-        .logout-btn:hover { background: #0056b3; }
-    </style>
+    <link rel="stylesheet" href="/static/css/admin_panel.css">
 </head>
 <body>
-    <div class="admin-panel-container">
-        <h2>LabFlow Admin Panel</h2>
-        <p>Witaj, {{ request.user.username }}! Jesteś zalogowany jako administrator.</p>
-        <a href="/logout/" class="logout-btn">Wyloguj się</a>
-    </div>
-</body>
-</html>
+                <div class="admin-panel-container">
+                    <h2>LabFlow ADMIN Panel</h2>
+                    <p style="text-align:center; font-size:1.1rem; color:#b71c1c; font-weight:600;">Witaj, {{ request.user.username }}! Jesteś zalogowany jako administrator.</p>
+
+                    <div class="admin-section">
+                        <h3>Podsumowanie</h3>
+                        <div class="admin-summary">Liczba użytkowników: <b>{{ users|length }}</b></div>
+                        <div class="admin-summary">Liczba laboratoriów: <b>{{ labs|length }}</b></div>
+                        <div class="admin-summary">Liczba sprzętów: <b>{{ devices|length }}</b></div>
+                        <div class="admin-summary">Liczba rezerwacji: <b>{{ reservations|length }}</b></div>
+                        <div class="admin-summary">Liczba zgłoszeń serwisowych: <b>{{ services|length }}</b></div>
+                    </div>
+
+                    <div class="admin-section">
+                        <h3>Użytkownicy</h3>
+                        <table class="admin-table">
+                            <tr><th>ID</th><th>Email</th><th>Imię</th><th>Nazwisko</th><th>Rola</th><th>Akcje</th></tr>
+                            {% for u in users %}
+                            <tr>
+                                <td>{{ u.id }}</td>
+                                <td>{{ u.email }}</td>
+                                <td>{{ u.imie }}</td>
+                                <td>{{ u.nazwisko }}</td>
+                                <td>
+                                    <form method="post" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                                        <select name="rola">
+                                            <option value="student" {% if u.rola == 'student' %}selected{% endif %}>Student</option>
+                                            <option value="pracownik" {% if u.rola == 'pracownik' %}selected{% endif %}>Pracownik naukowy</option>
+                                            <option value="admin" {% if u.rola == 'admin' %}selected{% endif %}>Admin</option>
+                                        </select>
+                                        <button type="submit" style="margin-left:6px;">Zmień</button>
+                                    </form>
+                                </td>
+                                <td>{% if u.is_superuser %}<b>Superuser</b>{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div class="admin-section">
+                        <h3>Laboratoria</h3>
+                        <table class="admin-table">
+                            <tr><th>ID</th><th>Nazwa</th><th>Lokalizacja</th><th>Opis</th></tr>
+                            {% for l in labs %}
+                            <tr><td>{{ l.id }}</td><td>{{ l.nazwa }}</td><td>{{ l.lokalizacja }}</td><td>{{ l.opis }}</td></tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div class="admin-section">
+                        <h3>Sprzęt</h3>
+                        <table class="admin-table">
+                            <tr><th>ID</th><th>Nazwa</th><th>Kategoria</th><th>Status</th><th>Laboratorium</th></tr>
+                            {% for s in devices %}
+                            <tr><td>{{ s.id }}</td><td>{{ s.nazwa }}</td><td>{{ s.kategoria }}</td><td>{{ s.status }}</td><td>{{ s.laboratorium.nazwa }}</td></tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div class="admin-section">
+                        <h3>Rezerwacje</h3>
+                        <table class="admin-table">
+                            <tr><th>ID</th><th>Sprzęt</th><th>Użytkownik</th><th>Od</th><th>Do</th><th>Status</th></tr>
+                            {% for r in reservations %}
+                            <tr><td>{{ r.id }}</td><td>{{ r.sprzet.nazwa }}</td><td>{{ r.uzytkownik.email }}</td><td>{{ r.data_rozpoczecia }}</td><td>{{ r.data_zakonczenia }}</td><td>{{ r.status }}</td></tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div class="admin-section">
+                        <h3>Zgłoszenia serwisowe</h3>
+                        <table class="admin-table">
+                            <tr><th>ID</th><th>Sprzęt</th><th>Data zgłoszenia</th><th>Opis</th><th>Status</th></tr>
+                            {% for s in services %}
+                            <tr><td>{{ s.id }}</td><td>{{ s.sprzet.nazwa }}</td><td>{{ s.data_zgloszenia }}</td><td>{{ s.opis }}</td><td>{{ s.status }}</td></tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <a href="/logout/" class="logout-btn">Wyloguj się</a>
+                </div>
+            </body>
+            </html>
