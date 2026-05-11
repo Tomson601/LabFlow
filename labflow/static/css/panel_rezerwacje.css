@@ -1,3 +1,28 @@
+/* Kolory statusów rezerwacji */
+.rez-status-oczekujaca {
+    background: #fff3cd;
+    color: #856404;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-weight: 600;
+    display: inline-block;
+}
+.rez-status-aktywna {
+    background: #d1ecf1;
+    color: #0c5460;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-weight: 600;
+    display: inline-block;
+}
+.rez-status-anulowana {
+    background: #e2e3e5;
+    color: #383d41;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-weight: 600;
+    display: inline-block;
+}
 /* Panel Rezerwacje Module */
 
 #rezerwacje-content h2 {

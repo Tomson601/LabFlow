@@ -1,4 +1,4 @@
-# Kolory statusów sprzętu
+/* Kolory statusów sprzętu */
 .status-dostepny {
     background: #d4edda;
     color: #155724;
@@ -23,7 +23,6 @@
     font-weight: 600;
     display: inline-block;
 }
-/* Panel Sprzęt Module */
 
 #sprzet-content h2 {
     margin-bottom: 18px;

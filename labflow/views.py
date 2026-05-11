@@ -37,9 +37,16 @@ def admin_panel_view(request):
         user = Uzytkownik.objects.filter(id=user_id).first()
         if user and rola in ['student', 'pracownik', 'admin']:
             user.rola = rola
-            # Jeśli admin, ustaw is_staff, jeśli nie, wyłącz
             user.is_staff = (rola == 'admin')
             user.save()
+
+    # Obsługa potwierdzania rezerwacji
+    if request.method == 'POST' and 'confirm_reservation_id' in request.POST:
+        res_id = request.POST.get('confirm_reservation_id')
+        rezerwacja = Rezerwacja.objects.filter(id=res_id).first()
+        if rezerwacja and rezerwacja.status == 'oczekująca':
+            rezerwacja.status = 'aktywna'
+            rezerwacja.save()
 
     users = Uzytkownik.objects.all()
     labs = Laboratorium.objects.all()

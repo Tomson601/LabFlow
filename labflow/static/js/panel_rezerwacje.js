@@ -78,7 +78,11 @@ async function pokazRezerwacje() {
             if (userId && Number(r.uzytkownik) === Number(userId)) {
                 akcje = `<button onclick="anulujRezerwacje(${r.id})">Anuluj</button>`;
             }
-            return `<tr><td>${r.sprzet_nazwa}</td><td>${r.data_rozpoczecia ? r.data_rozpoczecia.replace('T',' ').slice(0,16) : ''}</td><td>${r.data_zakonczenia ? r.data_zakonczenia.replace('T',' ').slice(0,16) : ''}</td><td>${r.status}</td><td>${akcje}</td></tr>`;
+            let statusClass = '';
+            if (r.status === 'oczekująca') statusClass = 'rez-status-oczekujaca';
+            else if (r.status === 'aktywna') statusClass = 'rez-status-aktywna';
+            else if (r.status === 'anulowana') statusClass = 'rez-status-anulowana';
+            return `<tr><td>${r.sprzet_nazwa}</td><td>${r.data_rozpoczecia ? r.data_rozpoczecia.replace('T',' ').slice(0,16) : ''}</td><td>${r.data_zakonczenia ? r.data_zakonczenia.replace('T',' ').slice(0,16) : ''}</td><td><span class="${statusClass}">${r.status}</span></td><td>${akcje}</td></tr>`;
         }).join('') + '</table>';
 
 }

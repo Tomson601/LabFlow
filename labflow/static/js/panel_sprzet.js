@@ -4,6 +4,8 @@
 async function zaladujLaboratoriaSprzet() {
     const res = await fetch('/api/laboratoria/');
     const data = await res.json();
+    wszystkieLaboratoria = data;
+    // Do formularza dodawania sprzętu
     const select = document.getElementById('laboratorium-sprzet');
     select.innerHTML = '';
     data.forEach(lab => {
@@ -12,6 +14,13 @@ async function zaladujLaboratoriaSprzet() {
         option.textContent = lab.nazwa;
         select.appendChild(option);
     });
+    // Do filtra
+    const labFiltr = document.getElementById('filtr-laboratorium');
+    if (labFiltr) {
+        const wybrane = labFiltr.value;
+        labFiltr.innerHTML = '<option value="">Wszystkie</option>' + data.map(l => `<option value="${l.id}">${l.nazwa}</option>`).join('');
+        labFiltr.value = wybrane;
+    }
 }
 
 // Obsługa formularza dodawania sprzętu
@@ -41,14 +50,53 @@ document.getElementById('sprzet-form').addEventListener('submit', async function
 });
 
 // Wyświetlanie listy sprzętu
+
+// --- FILTRY SPRZĘTU ---
+let wszystkieSprzety = [];
+let wszystkieLaboratoria = [];
+let wszystkieKategorie = [];
+
 async function pokazSprzet() {
     const res = await fetch('/api/sprzet/');
     const data = await res.json();
+    wszystkieSprzety = data;
+    wszystkieKategorie = [...new Set(data.map(s => s.kategoria).filter(Boolean))];
+    uzupelnijFiltrySprzet();
+    renderujSprzet();
+}
+
+function uzupelnijFiltrySprzet() {
+    // Kategorie
+    const katSelect = document.getElementById('filtr-kategoria');
+    if (katSelect) {
+        const wybrana = katSelect.value;
+        katSelect.innerHTML = '<option value="">Wszystkie</option>' + wszystkieKategorie.map(k => `<option value="${k}">${k}</option>`).join('');
+        katSelect.value = wybrana;
+    }
+    // Laboratoria
+    const labSelect = document.getElementById('filtr-laboratorium');
+    if (labSelect && Array.isArray(wszystkieLaboratoria) && wszystkieLaboratoria.length) {
+        const wybrane = labSelect.value;
+        labSelect.innerHTML = '<option value="">Wszystkie</option>' + wszystkieLaboratoria.map(l => `<option value="${l.id}">${l.nazwa}</option>`).join('');
+        labSelect.value = wybrane;
+    }
+}
+
+function renderujSprzet() {
     const kontener = document.getElementById('lista-sprzetu');
-    // Sprawdź uprawnienia użytkownika (rola przekazana przez Django do window.currentUserRole)
     const userRole = window.currentUserRole || 'uzytkownik';
+    // Pobierz wartości filtrów
+    const filtrStatus = document.getElementById('filtr-status')?.value || '';
+    const filtrLab = document.getElementById('filtr-laboratorium')?.value || '';
+    const filtrKat = document.getElementById('filtr-kategoria')?.value || '';
+    const filtrNazwa = document.getElementById('filtr-nazwa')?.value?.toLowerCase() || '';
+    let sprzety = wszystkieSprzety;
+    if (filtrStatus) sprzety = sprzety.filter(s => s.status === filtrStatus);
+    if (filtrLab) sprzety = sprzety.filter(s => String(s.laboratorium) === filtrLab);
+    if (filtrKat) sprzety = sprzety.filter(s => s.kategoria === filtrKat);
+    if (filtrNazwa) sprzety = sprzety.filter(s => s.nazwa.toLowerCase().includes(filtrNazwa));
     kontener.innerHTML = '<table><tr><th>Nazwa</th><th>Kategoria</th><th>Status</th><th>Laboratorium</th><th>Akcje</th></tr>' +
-        data.map(s => {
+        sprzety.map(s => {
             let statusClass = '';
             if (s.status === 'dostępny') statusClass = 'status-dostepny';
             else if (s.status === 'zarezerwowany') statusClass = 'status-zarezerwowany';
@@ -94,4 +142,12 @@ async function zmienStatusSprzetu(id, status) {
 window.addEventListener('DOMContentLoaded', () => {
     zaladujLaboratoriaSprzet();
     pokazSprzet();
+    // Obsługa filtrów
+    ['filtr-status','filtr-laboratorium','filtr-kategoria','filtr-nazwa'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', renderujSprzet);
+            el.addEventListener('change', renderujSprzet);
+        }
+    });
 });

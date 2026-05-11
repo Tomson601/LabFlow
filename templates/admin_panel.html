@@ -7,83 +7,130 @@
     <link rel="stylesheet" href="/static/css/admin_panel.css">
 </head>
 <body>
-                <div class="admin-panel-container">
-                    <h2>LabFlow ADMIN Panel</h2>
-                    <p style="text-align:center; font-size:1.1rem; color:#b71c1c; font-weight:600;">Witaj, {{ request.user.username }}! Jesteś zalogowany jako administrator.</p>
+    <div class="admin-panel-container">
+        <h2>LabFlow ADMIN Panel</h2>
+        <p style="text-align:center; font-size:1.1rem; color:#b71c1c; font-weight:600;">Witaj, {{ request.user.username }}! Jesteś zalogowany jako administrator.</p>
 
-                    <div class="admin-section">
-                        <h3>Podsumowanie</h3>
-                        <div class="admin-summary">Liczba użytkowników: <b>{{ users|length }}</b></div>
-                        <div class="admin-summary">Liczba laboratoriów: <b>{{ labs|length }}</b></div>
-                        <div class="admin-summary">Liczba sprzętów: <b>{{ devices|length }}</b></div>
-                        <div class="admin-summary">Liczba rezerwacji: <b>{{ reservations|length }}</b></div>
-                        <div class="admin-summary">Liczba zgłoszeń serwisowych: <b>{{ services|length }}</b></div>
-                    </div>
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="podsumowanie">Podsumowanie</button>
+            <button class="admin-tab" data-tab="uzytkownicy">Użytkownicy</button>
+            <button class="admin-tab" data-tab="laboratoria">Laboratoria</button>
+            <button class="admin-tab" data-tab="sprzet">Sprzęt</button>
+            <button class="admin-tab" data-tab="rezerwacje">Rezerwacje</button>
+            <button class="admin-tab" data-tab="serwis">Serwis</button>
+        </div>
 
-                    <div class="admin-section">
-                        <h3>Użytkownicy</h3>
-                        <table class="admin-table">
-                            <tr><th>ID</th><th>Email</th><th>Imię</th><th>Nazwisko</th><th>Rola</th><th>Akcje</th></tr>
-                            {% for u in users %}
-                            <tr>
-                                <td>{{ u.id }}</td>
-                                <td>{{ u.email }}</td>
-                                <td>{{ u.imie }}</td>
-                                <td>{{ u.nazwisko }}</td>
-                                <td>
-                                    <form method="post" style="display:inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="user_id" value="{{ u.id }}">
-                                        <select name="rola">
-                                            <option value="student" {% if u.rola == 'student' %}selected{% endif %}>Student</option>
-                                            <option value="pracownik" {% if u.rola == 'pracownik' %}selected{% endif %}>Pracownik naukowy</option>
-                                            <option value="admin" {% if u.rola == 'admin' %}selected{% endif %}>Admin</option>
-                                        </select>
-                                        <button type="submit" style="margin-left:6px;">Zmień</button>
-                                    </form>
-                                </td>
-                                <td>{% if u.is_superuser %}<b>Superuser</b>{% endif %}</td>
-                            </tr>
-                            {% endfor %}
-                        </table>
-                    </div>
-                    <div class="admin-section">
-                        <h3>Laboratoria</h3>
-                        <table class="admin-table">
-                            <tr><th>ID</th><th>Nazwa</th><th>Lokalizacja</th><th>Opis</th></tr>
-                            {% for l in labs %}
-                            <tr><td>{{ l.id }}</td><td>{{ l.nazwa }}</td><td>{{ l.lokalizacja }}</td><td>{{ l.opis }}</td></tr>
-                            {% endfor %}
-                        </table>
-                    </div>
-                    <div class="admin-section">
-                        <h3>Sprzęt</h3>
-                        <table class="admin-table">
-                            <tr><th>ID</th><th>Nazwa</th><th>Kategoria</th><th>Status</th><th>Laboratorium</th></tr>
-                            {% for s in devices %}
-                            <tr><td>{{ s.id }}</td><td>{{ s.nazwa }}</td><td>{{ s.kategoria }}</td><td>{{ s.status }}</td><td>{{ s.laboratorium.nazwa }}</td></tr>
-                            {% endfor %}
-                        </table>
-                    </div>
-                    <div class="admin-section">
-                        <h3>Rezerwacje</h3>
-                        <table class="admin-table">
-                            <tr><th>ID</th><th>Sprzęt</th><th>Użytkownik</th><th>Od</th><th>Do</th><th>Status</th></tr>
-                            {% for r in reservations %}
-                            <tr><td>{{ r.id }}</td><td>{{ r.sprzet.nazwa }}</td><td>{{ r.uzytkownik.email }}</td><td>{{ r.data_rozpoczecia }}</td><td>{{ r.data_zakonczenia }}</td><td>{{ r.status }}</td></tr>
-                            {% endfor %}
-                        </table>
-                    </div>
-                    <div class="admin-section">
-                        <h3>Zgłoszenia serwisowe</h3>
-                        <table class="admin-table">
-                            <tr><th>ID</th><th>Sprzęt</th><th>Data zgłoszenia</th><th>Opis</th><th>Status</th></tr>
-                            {% for s in services %}
-                            <tr><td>{{ s.id }}</td><td>{{ s.sprzet.nazwa }}</td><td>{{ s.data_zgloszenia }}</td><td>{{ s.opis }}</td><td>{{ s.status }}</td></tr>
-                            {% endfor %}
-                        </table>
-                    </div>
-                    <a href="/logout/" class="logout-btn">Wyloguj się</a>
-                </div>
+        <div class="admin-tab-content active" id="tab-podsumowanie">
+            <div class="admin-section">
+                <h3>Podsumowanie</h3>
+                <div class="admin-summary">Liczba użytkowników: <b>{{ users|length }}</b></div>
+                <div class="admin-summary">Liczba laboratoriów: <b>{{ labs|length }}</b></div>
+                <div class="admin-summary">Liczba sprzętów: <b>{{ devices|length }}</b></div>
+                <div class="admin-summary">Liczba rezerwacji: <b>{{ reservations|length }}</b></div>
+                <div class="admin-summary">Liczba zgłoszeń serwisowych: <b>{{ services|length }}</b></div>
+            </div>
+        </div>
+        <div class="admin-tab-content" id="tab-uzytkownicy">
+            <div class="admin-section">
+                <h3>Użytkownicy</h3>
+                <table class="admin-table">
+                    <tr><th>ID</th><th>Email</th><th>Imię</th><th>Nazwisko</th><th>Rola</th><th>Akcje</th></tr>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ u.id }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>{{ u.imie }}</td>
+                        <td>{{ u.nazwisko }}</td>
+                        <td>
+                            <form method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="{{ u.id }}">
+                                <select name="rola">
+                                    <option value="student" {% if u.rola == 'student' %}selected{% endif %}>Student</option>
+                                    <option value="pracownik" {% if u.rola == 'pracownik' %}selected{% endif %}>Pracownik naukowy</option>
+                                    <option value="admin" {% if u.rola == 'admin' %}selected{% endif %}>Admin</option>
+                                </select>
+                                <button type="submit" style="margin-left:6px;">Zmień</button>
+                            </form>
+                        </td>
+                        <td>{% if u.is_superuser %}<b>Superuser</b>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="admin-tab-content" id="tab-laboratoria">
+            <div class="admin-section">
+                <h3>Laboratoria</h3>
+                <table class="admin-table">
+                    <tr><th>ID</th><th>Nazwa</th><th>Lokalizacja</th><th>Opis</th></tr>
+                    {% for l in labs %}
+                    <tr><td>{{ l.id }}</td><td>{{ l.nazwa }}</td><td>{{ l.lokalizacja }}</td><td>{{ l.opis }}</td></tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="admin-tab-content" id="tab-sprzet">
+            <div class="admin-section">
+                <h3>Sprzęt</h3>
+                <table class="admin-table">
+                    <tr><th>ID</th><th>Nazwa</th><th>Kategoria</th><th>Status</th><th>Laboratorium</th></tr>
+                    {% for s in devices %}
+                    <tr><td>{{ s.id }}</td><td>{{ s.nazwa }}</td><td>{{ s.kategoria }}</td><td>{{ s.status }}</td><td>{{ s.laboratorium.nazwa }}</td></tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="admin-tab-content" id="tab-rezerwacje">
+            <div class="admin-section">
+                <h3>Rezerwacje</h3>
+                <table class="admin-table">
+                    <tr><th>ID</th><th>Sprzęt</th><th>Użytkownik</th><th>Od</th><th>Do</th><th>Status</th><th>Akcje</th></tr>
+                    {% for r in reservations %}
+                    <tr>
+                        <td>{{ r.id }}</td>
+                        <td>{{ r.sprzet.nazwa }}</td>
+                        <td>{{ r.uzytkownik.email }}</td>
+                        <td>{{ r.data_rozpoczecia }}</td>
+                        <td>{{ r.data_zakonczenia }}</td>
+                        <td>{{ r.status }}</td>
+                        <td>
+                            {% if r.status == 'oczekująca' %}
+                            <form method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="confirm_reservation_id" value="{{ r.id }}">
+                                <button type="submit" class="confirm-btn">Potwierdź</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="admin-tab-content" id="tab-serwis">
+            <div class="admin-section">
+                <h3>Zgłoszenia serwisowe</h3>
+                <table class="admin-table">
+                    <tr><th>ID</th><th>Sprzęt</th><th>Data zgłoszenia</th><th>Opis</th><th>Status</th></tr>
+                    {% for s in services %}
+                    <tr><td>{{ s.id }}</td><td>{{ s.sprzet.nazwa }}</td><td>{{ s.data_zgloszenia }}</td><td>{{ s.opis }}</td><td>{{ s.status }}</td></tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <a href="/logout/" class="logout-btn">Wyloguj się</a>
+    </div>
+    <script>
+    // Obsługa zakładek admina
+    document.querySelectorAll('.admin-tab').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.admin-tab-content').forEach(tab => tab.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+    </script>
             </body>
             </html>

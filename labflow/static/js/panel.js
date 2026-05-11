@@ -51,9 +51,10 @@ async function fetchEvents(info, successCallback, failureCallback) {
 
 function getColor(status) {
     switch (status) {
-        case 'aktywna': return '#007bff';
-        case 'oczekujaca': return '#ffc107';
-        case 'anulowana': return '#adb5bd';
+        case 'aktywna': return '#007bff'; // mocny niebieski
+        case 'oczekująca':
+        case 'oczekujaca': return '#ffc107'; // mocny żółty
+        case 'anulowana': return '#adb5bd'; // szary
         default: return '#999';
     }
 }

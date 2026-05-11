@@ -1,5 +1,32 @@
 <div id="sprzet-content" class="tab-content">
     <h2>Sprzęt</h2>
+    <div id="filtry-sprzet" style="margin-bottom:18px;display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
+        <div>
+            <label for="filtr-status">Status:</label>
+            <select id="filtr-status">
+                <option value="">Wszystkie</option>
+                <option value="dostępny">dostępny</option>
+                <option value="zarezerwowany">zarezerwowany</option>
+                <option value="serwis">serwis</option>
+            </select>
+        </div>
+        <div>
+            <label for="filtr-laboratorium">Laboratorium:</label>
+            <select id="filtr-laboratorium">
+                <option value="">Wszystkie</option>
+            </select>
+        </div>
+        <div>
+            <label for="filtr-kategoria">Kategoria:</label>
+            <select id="filtr-kategoria">
+                <option value="">Wszystkie</option>
+            </select>
+        </div>
+        <div>
+            <label for="filtr-nazwa">Nazwa:</label>
+            <input type="text" id="filtr-nazwa" placeholder="Szukaj po nazwie..." style="width:160px;">
+        </div>
+    </div>
     {% if request.user.rola == 'admin' or request.user.rola == 'pracownik' or request.user.is_superuser %}
     <button id="dodaj-sprzet-btn" onclick="document.getElementById('formularz-sprzet').style.display='block'">Dodaj sprzęt</button>
     {% endif %}
