@@ -71,11 +71,10 @@ async function pokazRezerwacje() {
     const res = await fetch('/api/rezerwacje/');
     const data = await res.json();
     const kontener = document.getElementById('lista-rezerwacji');
-    const userId = window.currentUserId;
     kontener.innerHTML = '<table><tr><th>Sprzęt</th><th>Od</th><th>Do</th><th>Status</th><th>Akcje</th></tr>' +
         data.map(r => {
             let akcje = '';
-            if (userId && Number(r.uzytkownik) === Number(userId)) {
+            if (r.status === 'oczekująca' || r.status === 'aktywna') {
                 akcje = `<button onclick="anulujRezerwacje(${r.id})">Anuluj</button>`;
             }
             let statusClass = '';

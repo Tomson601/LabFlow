@@ -1,3 +1,49 @@
+/* Badge style for status (uniwersalny do admina) */
+.status-badge {
+    display: inline-block;
+    font-weight: bold;
+    border-radius: 12px;
+    padding: 2px 14px;
+    font-size: 1rem;
+    margin: 0 2px;
+    text-transform: lowercase;
+}
+.status-dostępny, .status-oczekująca, .status-nowe {
+    background: #e3f0fd;
+    color: #1976d2;
+}
+.status-zarezerwowany, .status-zarezerwowana {
+    background: #fdeaea;
+    color: #b71c1c;
+}
+.status-serwis, .status-wtrakcie {
+    background: #fff3cd;
+    color: #b26a00;
+}
+.status-zakonczone, .status-zakończone {
+    background: #d4f5df;
+    color: #217a39;
+}
+
+/* Przyciski edycji i usuwania */
+.edit-btn, .delete-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin: 0 2px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+.edit-btn:hover {
+    background: #1976d2;
+    color: #fff;
+}
+.delete-btn:hover {
+    background: #b71c1c;
+    color: #fff;
+}
 /* Zakładki admina */
 .admin-tabs {
     display: flex;

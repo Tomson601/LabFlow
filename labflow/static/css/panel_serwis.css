@@ -1,3 +1,30 @@
+.status-nowe, .status-nowe select {
+    background: #e3f0fd;
+    color: #1976d2 !important;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    padding: 2px 14px;
+    display: inline-block;
+}
+.status-wtrakcie, .status-wtrakcie select {
+    background: #fff3cd;
+    color: #b26a00 !important;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    padding: 2px 14px;
+    display: inline-block;
+}
+.status-zakonczone, .status-zakonczone select {
+    background: #d4f5df;
+    color: #217a39 !important;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    padding: 2px 14px;
+    display: inline-block;
+}
 /* Panel Serwis Module */
 
 #serwis-content h2 {

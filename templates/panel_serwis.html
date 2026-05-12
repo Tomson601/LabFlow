@@ -25,3 +25,6 @@
 <link rel="stylesheet" href="/static/css/panel_serwis.css">
 <script src="/static/js/utils.js"></script>
 <script src="/static/js/panel_serwis.js"></script>
+<script>
+window.currentUserRole = "{% if request.user.is_superuser %}superuser{% else %}{{ request.user.rola|default:'' }}{% endif %}";
+</script>

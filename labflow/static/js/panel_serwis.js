@@ -43,8 +43,27 @@ async function pokazSerwis() {
     const res = await fetch('/api/serwis/');
     const data = await res.json();
     const kontener = document.getElementById('lista-serwis');
-    kontener.innerHTML = '<table><tr><th>Sprzęt</th><th>Data zgłoszenia</th><th>Opis</th><th>Status</th><th>Akcje</th></tr>' +
-        data.map(s => `<tr><td>${s.sprzet}</td><td>${s.data_zgloszenia ? s.data_zgloszenia.replace('T',' ').slice(0,16) : ''}</td><td>${s.opis}</td><td><select onchange="zmienStatusSerwis(${s.id}, this.value)">${['nowe','w trakcie','zakończone'].map(opt => `<option value="${opt}"${s.status===opt?' selected':''}>${opt}</option>`).join('')}</select></td><td><button onclick="usunSerwis(${s.id})">Usuń</button></td></tr>`).join('') + '</table>';
+    const userRole = window.currentUserRole || 'uzytkownik';
+    kontener.innerHTML = '<table><tr><th>Sprzęt</th><th>Data zgłoszenia</th><th>Opis</th>' +
+        (userRole === 'admin' ? '<th>Status</th><th>Akcje</th>' : '<th>Status</th>') + '</tr>' +
+        data.map(s => {
+            let statusCell = '';
+            let akcjeCell = '';
+            let statusClass = '';
+            if (s.status === 'nowe') statusClass = 'status-nowe';
+            else if (s.status === 'w trakcie') statusClass = 'status-wtrakcie';
+            else if (s.status === 'zakończone') statusClass = 'status-zakonczone';
+            if (userRole === 'admin') {
+                statusCell = `<span class="${statusClass}" style="padding:0;">` +
+                    `<select class="${statusClass}" style="background:inherit;border:none;outline:none;border-radius:12px;padding:2px 14px;">
+                        ${['nowe','w trakcie','zakończone'].map(opt => `<option value="${opt}"${s.status===opt?' selected':''}>${opt}</option>`).join('')}
+                    </select></span>`;
+                akcjeCell = `<button onclick="usunSerwis(${s.id})">Usuń</button>`;
+            } else {
+                statusCell = `<span class="${statusClass}">${s.status}</span>`;
+            }
+            return `<tr><td>${s.sprzet}</td><td>${s.data_zgloszenia ? s.data_zgloszenia.replace('T',' ').slice(0,16) : ''}</td><td>${s.opis}</td><td>${statusCell}</td>` + (userRole === 'admin' ? `<td>${akcjeCell}</td>` : '') + `</tr>`;
+        }).join('') + '</table>';
 }
 
 // Usuwanie zgłoszenia serwisowego

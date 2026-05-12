@@ -1,8 +1,8 @@
 <div id="laboratoria-content" class="tab-content">
     <h2>Laboratoria</h2>
     {% if request.user.rola == 'admin' or request.user.rola == 'pracownik' or request.user.is_superuser %}
-    <button id="dodaj-laboratorium-btn" onclick="document.getElementById('formularz-laboratorium').style.display='block'">Dodaj laboratorium</button>
-    {% endif %}
+    <button id="dodaj-laboratorium-btn"
+        onclick="document.getElementById('formularz-laboratorium').style.display='block'">Dodaj laboratorium</button>
     <div id="formularz-laboratorium" style="display:none;">
         <form id="laboratorium-form">
             <label for="nazwa-lab">Nazwa:</label>
@@ -12,8 +12,15 @@
             <label for="opis-lab">Opis:</label>
             <input type="text" id="opis-lab" name="opis">
             <button type="submit">Dodaj</button>
-            <button type="button" onclick="document.getElementById('formularz-laboratorium').style.display='none'">Anuluj</button>
+            <button type="button"
+                onclick="document.getElementById('formularz-laboratorium').style.display='none'">Anuluj</button>
         </form>
+    </div>
+    {% endif %}
+    <div id="filtry-laboratoria" style="margin: 16px 0 16px 0;">
+        <input type="text" id="filtr-nazwa" placeholder="Filtruj po nazwie" style="margin-right:8px;">
+        <input type="text" id="filtr-lokalizacja" placeholder="Filtruj po lokalizacji" style="margin-right:8px;">
+        <input type="text" id="filtr-opis" placeholder="Filtruj po opisie">
     </div>
     <div id="lista-laboratoriow"></div>
 </div>
@@ -21,3 +28,6 @@
 <link rel="stylesheet" href="/static/css/panel_laboratoria.css">
 <script src="/static/js/utils.js"></script>
 <script src="/static/js/panel_laboratoria.js"></script>
+<script>
+    window.currentUserRole = "{% if request.user.is_superuser %}superuser{% else %}{{ request.user.rola|default:'' }}{% endif %}";
+</script>
