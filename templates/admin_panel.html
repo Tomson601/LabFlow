@@ -10,7 +10,7 @@
 <body>
     <div class="admin-panel-container">
         <h2>LabFlow ADMIN Panel</h2>
-        <p style="text-align:center; font-size:1.1rem; color:#b71c1c; font-weight:600;">Witaj, {{ request.user.username }}! Jesteś zalogowany jako administrator.</p>
+        <p style="text-align:center; font-size:1.1rem; color:#b71c1c; font-weight:600;">Witaj, {{ user.imie }} {{ user.nazwisko }}! Jesteś zalogowany jako administrator.</p>
 
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="podsumowanie">Podsumowanie</button>
@@ -48,7 +48,7 @@
                         <td>
                             <button class="edit-btn" title="Edytuj użytkownika">✏️</button>
                             <button class="delete-btn" title="Usuń użytkownika">🗑️</button>
-                            {% if u.is_superuser %}<b>Superuser</b>{% endif %}
+                            {% if u.rola == 'admin' %}<b>Administrator</b>{% endif %}
                         </td>
                     </tr>
                     {% endfor %}

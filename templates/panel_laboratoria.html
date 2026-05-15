@@ -1,6 +1,7 @@
 <div id="laboratoria-content" class="tab-content">
     <h2>Laboratoria</h2>
-    {% if request.user.rola == 'admin' or request.user.rola == 'pracownik' or request.user.is_superuser %}
+    {% if user %}
+    {% if user.rola == 'admin' or user.rola == 'pracownik' %}
     <button id="dodaj-laboratorium-btn"
         onclick="document.getElementById('formularz-laboratorium').style.display='block'">Dodaj laboratorium</button>
     <div id="formularz-laboratorium" style="display:none;">
@@ -11,16 +12,26 @@
             <input type="text" id="lokalizacja-lab" name="lokalizacja" required>
             <label for="opis-lab">Opis:</label>
             <input type="text" id="opis-lab" name="opis">
-            <button type="submit">Dodaj</button>
-            <button type="button"
+            <button type="submit" class="labflow-btn labflow-btn-primary">Dodaj</button>
+            <button type="button" class="labflow-btn labflow-btn-secondary"
                 onclick="document.getElementById('formularz-laboratorium').style.display='none'">Anuluj</button>
         </form>
     </div>
     {% endif %}
-    <div id="filtry-laboratoria" style="margin: 16px 0 16px 0;">
-        <input type="text" id="filtr-nazwa" placeholder="Filtruj po nazwie" style="margin-right:8px;">
-        <input type="text" id="filtr-lokalizacja" placeholder="Filtruj po lokalizacji" style="margin-right:8px;">
-        <input type="text" id="filtr-opis" placeholder="Filtruj po opisie">
+    {% endif %}
+    <div id="filtry-laboratoria" class="labflow-filter-bar">
+        <div>
+            <label for="filtr-lab-nazwa">Nazwa</label>
+            <input type="text" id="filtr-lab-nazwa" placeholder="Filtruj po nazwie">
+        </div>
+        <div>
+            <label for="filtr-lab-lokalizacja">Lokalizacja</label>
+            <input type="text" id="filtr-lab-lokalizacja" placeholder="Filtruj po lokalizacji">
+        </div>
+        <div>
+            <label for="filtr-lab-opis">Opis</label>
+            <input type="text" id="filtr-lab-opis" placeholder="Filtruj po opisie">
+        </div>
     </div>
     <div id="lista-laboratoriow"></div>
 </div>
@@ -29,5 +40,5 @@
 <script src="/static/js/utils.js"></script>
 <script src="/static/js/panel_laboratoria.js"></script>
 <script>
-    window.currentUserRole = "{% if request.user.is_superuser %}superuser{% else %}{{ request.user.rola|default:'' }}{% endif %}";
+    window.currentUserRole = "{{ user.rola|default:'' }}";
 </script>

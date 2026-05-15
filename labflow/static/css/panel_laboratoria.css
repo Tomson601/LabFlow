@@ -107,7 +107,7 @@
     box-sizing: border-box;
 }
 
-#lista-laboratoriow button {
+#lista-laboratoriow button:not(.labflow-btn) {
     background: #dc3545;
     color: #fff;
     border: none;
@@ -118,6 +118,6 @@
     transition: background 0.2s;
 }
 
-#lista-laboratoriow button:hover {
+#lista-laboratoriow button:not(.labflow-btn):hover {
     background: #a71d2a;
 }

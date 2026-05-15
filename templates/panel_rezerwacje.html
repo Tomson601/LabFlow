@@ -1,6 +1,6 @@
 <div id="rezerwacje-content" class="tab-content">
     <h2>Lista rezerwacji</h2>
-    <button id="dodaj-rezerwacje-btn" onclick="document.getElementById('formularz-rezerwacji').style.display='block'">Dodaj rezerwację</button>
+    <button id="dodaj-rezerwacje-btn" class="labflow-btn labflow-btn-primary" onclick="document.getElementById('formularz-rezerwacji').style.display='block'">Dodaj rezerwację</button>
     <div id="formularz-rezerwacji" style="display:none;">
         <form id="rezerwacja-form">
             <label for="laboratorium">Laboratorium:</label>
@@ -11,11 +11,38 @@
             <input type="datetime-local" id="data_rozpoczecia" name="data_rozpoczecia" required>
             <label for="data_zakonczenia">Data zakończenia:</label>
             <input type="datetime-local" id="data_zakonczenia" name="data_zakonczenia" required>
-            <button type="submit">Zarezerwuj</button>
-            <button type="button" onclick="document.getElementById('formularz-rezerwacji').style.display='none'">Anuluj</button>
+            <button type="submit" class="labflow-btn labflow-btn-primary">Zarezerwuj</button>
+            <button type="button" class="labflow-btn labflow-btn-secondary" onclick="document.getElementById('formularz-rezerwacji').style.display='none'">Anuluj</button>
         </form>
     </div>
     <div id="lista-rezerwacji"></div>
+</div>
+
+<!-- Overlay z blur efektem -->
+<div id="modal-overlay"></div>
+
+<!-- Modal edycji rezerwacji -->
+<div id="rezerwacja-modal" class="labflow-modal">
+    <div class="labflow-modal-content">
+        <div class="labflow-modal-header">
+            <h3>Edytuj rezerwację</h3>
+            <button type="button" class="labflow-modal-close" onclick="zamknijModalRezerwacji()">&times;</button>
+        </div>
+        <form id="rezerwacja-edit-form">
+            <input type="hidden" id="edit-rezerwacja-id">
+            <label for="edit-sprzet">Sprzęt</label>
+            <select id="edit-sprzet" name="sprzet" required></select>
+            <label for="edit-data-rozpoczecia">Data rozpoczęcia</label>
+            <input type="datetime-local" id="edit-data-rozpoczecia" name="data_rozpoczecia" required>
+            <label for="edit-data-zakonczenia">Data zakończenia</label>
+            <input type="datetime-local" id="edit-data-zakonczenia" name="data_zakonczenia" required>
+            <div class="labflow-modal-actions">
+                <button type="submit" class="labflow-btn labflow-btn-primary">Zapisz zmiany</button>
+                <button type="button" class="labflow-btn labflow-btn-danger" onclick="anulujRezerwacjeZModyla()">Anuluj rezerwację</button>
+                <button type="button" class="labflow-btn labflow-btn-secondary" onclick="zamknijModalRezerwacji()">Zamknij</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <link rel="stylesheet" href="/static/css/panel_rezerwacje.css">

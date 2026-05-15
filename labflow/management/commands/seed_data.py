@@ -28,30 +28,26 @@ class Command(BaseCommand):
             opis="Nowoczesna sala komputerowa"
         )
 
-        user1 = Uzytkownik.objects.create_user(
-            username="admin_lab",
-            email="jan.kowalski@example.com",
-            password="admin123",
+        user1 = Uzytkownik.objects.create(
             imie="Jan",
             nazwisko="Kowalski",
+            email="jan.kowalski@example.com",
             rola="admin",
-            is_staff=True
+            haslo="admin123"
         )
-        user2 = Uzytkownik.objects.create_user(
-            username="technik1",
-            email="anna.nowak@example.com",
-            password="technik123",
+        user2 = Uzytkownik.objects.create(
             imie="Anna",
             nazwisko="Nowak",
-            rola="student"
+            email="anna.nowak@example.com",
+            rola="student",
+            haslo="technik123"
         )
-        user3 = Uzytkownik.objects.create_user(
-            username="pracownik1",
-            email="pracownik@example.com",
-            password="pracownik123",
+        user3 = Uzytkownik.objects.create(
             imie="Piotr",
             nazwisko="Zieliński",
-            rola="pracownik"
+            email="pracownik@example.com",
+            rola="pracownik",
+            haslo="pracownik123"
         )
 
         sprzet1 = Sprzet.objects.create(
@@ -63,7 +59,7 @@ class Command(BaseCommand):
         sprzet2 = Sprzet.objects.create(
             nazwa="Drukarka 3D Prusa",
             kategoria="prototypowanie",
-            status="w użyciu",
+            status="zarezerwowany",
             laboratorium=lab1
         )
         sprzet3 = Sprzet.objects.create(

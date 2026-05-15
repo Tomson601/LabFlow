@@ -1,6 +1,6 @@
 <div id="serwis-content" class="tab-content">
     <h2>Serwis</h2>
-    <button id="dodaj-serwis-btn" onclick="document.getElementById('formularz-serwis').style.display='block'">Dodaj zgłoszenie serwisowe</button>
+    <button id="dodaj-serwis-btn" class="labflow-btn labflow-btn-primary" onclick="document.getElementById('formularz-serwis').style.display='block'">Dodaj zgłoszenie serwisowe</button>
     <div id="formularz-serwis" style="display:none;">
         <form id="serwis-form">
             <label for="sprzet-serwis">Sprzęt:</label>
@@ -15,8 +15,8 @@
                 <option value="w trakcie">w trakcie</option>
                 <option value="zakończone">zakończone</option>
             </select>
-            <button type="submit">Dodaj</button>
-            <button type="button" onclick="document.getElementById('formularz-serwis').style.display='none'">Anuluj</button>
+            <button type="submit" class="labflow-btn labflow-btn-primary">Dodaj</button>
+            <button type="button" class="labflow-btn labflow-btn-secondary" onclick="document.getElementById('formularz-serwis').style.display='none'">Anuluj</button>
         </form>
     </div>
     <div id="lista-serwis"></div>
@@ -26,5 +26,5 @@
 <script src="/static/js/utils.js"></script>
 <script src="/static/js/panel_serwis.js"></script>
 <script>
-window.currentUserRole = "{% if request.user.is_superuser %}superuser{% else %}{{ request.user.rola|default:'' }}{% endif %}";
+window.currentUserRole = "{{ user.rola|default:'' }}";
 </script>

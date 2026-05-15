@@ -17,7 +17,8 @@ async function fetchEvents(info, successCallback, failureCallback) {
         console.log("Pobieram dane z API...");
 
         const response = await fetch('/api/rezerwacje/', {
-            credentials: 'include'
+            credentials: 'include',
+            cache: 'no-store'
         });
 
         console.log("Status:", response.status);

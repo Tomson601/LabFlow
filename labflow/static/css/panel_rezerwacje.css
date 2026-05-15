@@ -122,3 +122,217 @@
 #lista-rezerwacji tr:last-child td {
     border-bottom: none;
 }
+
+/* ============ MODAL STYLES ============ */
+
+/* Overlay z blur efektem */
+#modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 998;
+}
+
+#modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal */
+#rezerwacja-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#rezerwacja-modal.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* Modal Header */
+.labflow-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+}
+
+.labflow-modal-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Close button */
+.labflow-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    opacity: 0.9;
+}
+
+.labflow-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+/* Modal Content */
+.labflow-modal-content {
+    padding: 30px;
+}
+
+.labflow-modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.labflow-modal-content label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 14px;
+    text-transform: capitalize;
+}
+
+.labflow-modal-content input,
+.labflow-modal-content select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.labflow-modal-content input:focus,
+.labflow-modal-content select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Modal Actions */
+.labflow-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+    justify-content: flex-end;
+}
+
+.labflow-modal-actions button {
+    padding: 11px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.labflow-btn {
+    display: inline-block;
+}
+
+.labflow-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.labflow-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.labflow-btn-primary:active {
+    transform: translateY(0);
+}
+
+.labflow-btn-secondary {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.labflow-btn-secondary:hover {
+    background: #d0d0d0;
+    transform: translateY(-2px);
+}
+
+.labflow-btn-danger {
+    background: #f44336;
+    color: white;
+}
+
+.labflow-btn-danger:hover {
+    background: #da190b;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(244, 67, 54, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    #rezerwacja-modal {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .labflow-modal-header {
+        padding: 18px;
+    }
+
+    .labflow-modal-content {
+        padding: 20px;
+    }
+
+    .labflow-modal-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .labflow-modal-actions button {
+        width: 100%;
+    }
+}

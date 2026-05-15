@@ -1,9 +1,9 @@
 <div id="sprzet-content" class="tab-content">
     <h2>Sprzęt</h2>
-    <div id="filtry-sprzet" style="margin-bottom:18px;display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
+    <div id="filtry-sprzet" class="labflow-filter-bar">
         <div>
-            <label for="filtr-status">Status:</label>
-            <select id="filtr-status">
+            <label for="filtr-sprzet-status">Status</label>
+            <select id="filtr-sprzet-status">
                 <option value="">Wszystkie</option>
                 <option value="dostępny">dostępny</option>
                 <option value="zarezerwowany">zarezerwowany</option>
@@ -11,24 +11,26 @@
             </select>
         </div>
         <div>
-            <label for="filtr-laboratorium">Laboratorium:</label>
-            <select id="filtr-laboratorium">
+            <label for="filtr-sprzet-laboratorium">Laboratorium</label>
+            <select id="filtr-sprzet-laboratorium">
                 <option value="">Wszystkie</option>
             </select>
         </div>
         <div>
-            <label for="filtr-kategoria">Kategoria:</label>
-            <select id="filtr-kategoria">
+            <label for="filtr-sprzet-kategoria">Kategoria</label>
+            <select id="filtr-sprzet-kategoria">
                 <option value="">Wszystkie</option>
             </select>
         </div>
         <div>
-            <label for="filtr-nazwa">Nazwa:</label>
-            <input type="text" id="filtr-nazwa" placeholder="Szukaj po nazwie..." style="width:160px;">
+            <label for="filtr-sprzet-nazwa">Nazwa</label>
+            <input type="text" id="filtr-sprzet-nazwa" placeholder="Szukaj po nazwie...">
         </div>
     </div>
-    {% if request.user.rola == 'admin' or request.user.rola == 'pracownik' or request.user.is_superuser %}
+    {% if user %}
+    {% if user.rola == 'admin' or user.rola == 'pracownik' %}
     <button id="dodaj-sprzet-btn" onclick="document.getElementById('formularz-sprzet').style.display='block'">Dodaj sprzęt</button>
+    {% endif %}
     {% endif %}
     <div id="formularz-sprzet" style="display:none;">
         <form id="sprzet-form">
@@ -42,10 +44,10 @@
                 <option value="zarezerwowany">zarezerwowany</option>
                 <option value="serwis">serwis</option>
             </select>
-            <label for="laboratorium">Laboratorium:</label>
+            <label for="laboratorium-sprzet">Laboratorium:</label>
             <select id="laboratorium-sprzet" name="laboratorium" required></select>
-            <button type="submit">Dodaj</button>
-            <button type="button" onclick="document.getElementById('formularz-sprzet').style.display='none'">Anuluj</button>
+            <button type="submit" class="labflow-btn labflow-btn-primary">Dodaj</button>
+            <button type="button" class="labflow-btn labflow-btn-secondary" onclick="document.getElementById('formularz-sprzet').style.display='none'">Anuluj</button>
         </form>
     </div>
     <div id="lista-sprzetu"></div>

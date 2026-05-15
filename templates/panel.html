@@ -46,8 +46,8 @@
         {% include 'panel_laboratoria.html' %}
         {% include 'panel_serwis.html' %}
     </div>
-    <script type="application/json" id="current-user-id">{{ request.user.id|json_script:"current-user-id" }}</script>
-        <script type="application/json" id="current-user-role">"{{ request.user.rola|default:'uzytkownik' }}"</script>
+    {{ user.id|json_script:"current-user-id" }}
+    {{ user.rola|default:'uzytkownik'|json_script:"current-user-role" }}
     <script>
         window.currentUserId = JSON.parse(document.getElementById('current-user-id').textContent);
         window.currentUserRole = JSON.parse(document.getElementById('current-user-role').textContent);

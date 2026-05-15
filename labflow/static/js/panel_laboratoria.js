@@ -1,7 +1,81 @@
 // Panel Laboratoria Module - JavaScript
 
-// Obsługa formularza dodawania laboratorium
+let wszystkieLaboratoriaPanel = [];
 
+function escapeHtmlLaboratoria(value) {
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
+function pobierzFiltryLaboratoriow() {
+    return {
+        nazwa: (document.getElementById('filtr-lab-nazwa')?.value || '').trim().toLowerCase(),
+        lokalizacja: (document.getElementById('filtr-lab-lokalizacja')?.value || '').trim().toLowerCase(),
+        opis: (document.getElementById('filtr-lab-opis')?.value || '').trim().toLowerCase(),
+    };
+}
+
+function renderujLaboratoria() {
+    const kontener = document.getElementById('lista-laboratoriow');
+    if (!kontener) return;
+
+    const userRole = window.currentUserRole || 'uzytkownik';
+    const canManage = userRole === 'admin' || userRole === 'pracownik';
+    const filtry = pobierzFiltryLaboratoriow();
+
+    const laboratoria = wszystkieLaboratoriaPanel.filter(lab => {
+        const nazwa = (lab.nazwa || '').toLowerCase();
+        const lokalizacja = (lab.lokalizacja || '').toLowerCase();
+        const opis = (lab.opis || '').toLowerCase();
+        return (!filtry.nazwa || nazwa.includes(filtry.nazwa)) &&
+            (!filtry.lokalizacja || lokalizacja.includes(filtry.lokalizacja)) &&
+            (!filtry.opis || opis.includes(filtry.opis));
+    });
+
+    if (!laboratoria || laboratoria.length === 0) {
+        kontener.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">Brak laboratoriów</p>';
+        return;
+    }
+
+    let html = '<table><tr><th>Nazwa</th><th>Lokalizacja</th><th>Opis</th>' + (canManage ? '<th>Akcje</th>' : '') + '</tr>';
+    html += laboratoria.map(lab => {
+        if (canManage) {
+            return `<tr>
+                <td>${escapeHtmlLaboratoria(lab.nazwa || '')}</td>
+                <td><input class="labflow-inline-input" value="${escapeHtmlLaboratoria(lab.lokalizacja || '')}" onchange="zmienLokalizacje(${lab.id}, this.value)"></td>
+                <td><input class="labflow-inline-input" value="${escapeHtmlLaboratoria(lab.opis || '')}" onchange="zmienOpis(${lab.id}, this.value)"></td>
+                <td><button class="labflow-btn labflow-btn-danger labflow-btn-sm" onclick="usunLaboratorium(${lab.id})">Usuń</button></td>
+            </tr>`;
+        }
+        return `<tr><td>${escapeHtmlLaboratoria(lab.nazwa || '')}</td><td>${escapeHtmlLaboratoria(lab.lokalizacja || '')}</td><td>${escapeHtmlLaboratoria(lab.opis || '')}</td></tr>`;
+    }).join('');
+    html += '</table>';
+    kontener.innerHTML = html;
+}
+
+async function pobierzLaboratoria() {
+    try {
+        const res = await fetch('/api/laboratoria/');
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        wszystkieLaboratoriaPanel = Array.isArray(data) ? data : [];
+        renderujLaboratoria();
+    } catch (error) {
+        console.error('Błąd ładowania laboratoriów:', error);
+        const kontener = document.getElementById('lista-laboratoriow');
+        if (kontener) {
+            kontener.innerHTML = '<p style="color: red;">Błąd ładowania danych. Spróbuj odświeżyć stronę.</p>';
+        }
+    }
+}
+
+// Obsługa formularza dodawania laboratorium
 const labForm = document.getElementById('laboratorium-form');
 if (labForm) {
     labForm.addEventListener('submit', async function(e) {
@@ -20,35 +94,13 @@ if (labForm) {
         if (res.ok) {
             alert('Laboratorium dodane!');
             document.getElementById('formularz-laboratorium').style.display = 'none';
-            pokazLaboratoria();
+            await pobierzLaboratoria();
         } else {
             alert('Błąd dodawania laboratorium!');
         }
     });
 }
 
-// Wyświetlanie listy laboratoriów
-async function pokazLaboratoria() {
-    const res = await fetch('/api/laboratoria/');
-    const data = await res.json();
-    const kontener = document.getElementById('lista-laboratoriow');
-    // Sprawdź uprawnienia użytkownika (rola przekazana przez Django do window.currentUserRole)
-    const userRole = window.currentUserRole || 'uzytkownik';
-    let html = '<table><tr><th>Nazwa</th><th>Lokalizacja</th><th>Opis</th>';
-    if (userRole === 'admin' || userRole === 'pracownik' || userRole === 'superuser') html += '<th>Akcje</th>';
-    html += '</tr>';
-    html += data.map(lab => {
-        if (userRole === 'admin' || userRole === 'pracownik' || userRole === 'superuser') {
-            return `<tr><td>${lab.nazwa}</td><td><input value="${lab.lokalizacja}" onchange="zmienLokalizacje(${lab.id}, this.value)"></td><td><input value="${lab.opis || ''}" onchange="zmienOpis(${lab.id}, this.value)"></td><td><button onclick="usunLaboratorium(${lab.id})">Usuń</button></td></tr>`;
-        } else {
-            return `<tr><td>${lab.nazwa}</td><td>${lab.lokalizacja}</td><td>${lab.opis || ''}</td></tr>`;
-        }
-    }).join('');
-    html += '</table>';
-    kontener.innerHTML = html;
-}
-
-// Usuwanie laboratorium
 async function usunLaboratorium(id) {
     if (!confirm('Na pewno usunąć laboratorium?')) return;
     const res = await fetch('/api/laboratoria/' + id + '/', {
@@ -56,13 +108,12 @@ async function usunLaboratorium(id) {
         headers: { 'X-CSRFToken': getCookie('csrftoken') }
     });
     if (res.ok) {
-        pokazLaboratoria();
+        await pobierzLaboratoria();
     } else {
         alert('Błąd usuwania!');
     }
 }
 
-// Zmiana lokalizacji laboratorium
 async function zmienLokalizacje(id, lokalizacja) {
     const res = await fetch('/api/laboratoria/' + id + '/', {
         method: 'PATCH',
@@ -74,11 +125,10 @@ async function zmienLokalizacje(id, lokalizacja) {
     });
     if (!res.ok) {
         alert('Błąd zmiany lokalizacji!');
-        pokazLaboratoria();
+        await pobierzLaboratoria();
     }
 }
 
-// Zmiana opisu laboratorium
 async function zmienOpis(id, opis) {
     const res = await fetch('/api/laboratoria/' + id + '/', {
         method: 'PATCH',
@@ -90,13 +140,21 @@ async function zmienOpis(id, opis) {
     });
     if (!res.ok) {
         alert('Błąd zmiany opisu!');
-        pokazLaboratoria();
+        await pobierzLaboratoria();
     }
 }
 
-// Automatyczne ładowanie laboratoriów po załadowaniu strony
-document.addEventListener('DOMContentLoaded', pokazLaboratoria);
+function podlaczFiltryLaboratoriow() {
+    ['filtr-lab-nazwa', 'filtr-lab-lokalizacja', 'filtr-lab-opis'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', renderujLaboratoria);
+            element.addEventListener('change', renderujLaboratoria);
+        }
+    });
+}
 
-window.addEventListener('DOMContentLoaded', () => {
-    pokazLaboratoria();
+document.addEventListener('DOMContentLoaded', async () => {
+    podlaczFiltryLaboratoriow();
+    await pobierzLaboratoria();
 });

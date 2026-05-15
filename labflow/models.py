@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 
 class Laboratorium(models.Model):
     nazwa = models.CharField(max_length=100)
@@ -9,15 +8,12 @@ class Laboratorium(models.Model):
     def __str__(self):
         return self.nazwa
 
-class Uzytkownik(AbstractUser):
+class Uzytkownik(models.Model):
     imie = models.CharField(max_length=50)
     nazwisko = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
     rola = models.CharField(max_length=50)
-    # haslo handled by AbstractUser
-
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    haslo = models.CharField(max_length=128)
 
     def __str__(self):
         return f"{self.imie} {self.nazwisko}"

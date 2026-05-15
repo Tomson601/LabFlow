@@ -129,7 +129,7 @@
     font-size: 1rem;
 }
 
-#lista-sprzetu button {
+#lista-sprzetu button:not(.labflow-btn) {
     background: #dc3545;
     color: #fff;
     border: none;
@@ -140,6 +140,6 @@
     transition: background 0.2s;
 }
 
-#lista-sprzetu button:hover {
+#lista-sprzetu button:not(.labflow-btn):hover {
     background: #a71d2a;
 }

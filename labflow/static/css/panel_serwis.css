@@ -132,7 +132,7 @@
     font-size: 1rem;
 }
 
-#lista-serwis button {
+#lista-serwis button:not(.labflow-btn) {
     background: #dc3545;
     color: #fff;
     border: none;
@@ -143,6 +143,6 @@
     transition: background 0.2s;
 }
 
-#lista-serwis button:hover {
+#lista-serwis button:not(.labflow-btn):hover {
     background: #a71d2a;
 }
