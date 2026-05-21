@@ -1,0 +1,178 @@
+html {
+    min-height: 100%;
+    overflow-x: hidden;
+}
+
+
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background: linear-gradient(120deg, #007bff 0%, #6dd5ed 100%);
+    min-height: 100%;
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.container {
+    width: 950px;
+    margin: 40px auto 20px auto;
+    background: #fff;
+    padding: 36px;
+    border-radius: 14px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.logout-btn {
+    padding: 10px 24px;
+    background: linear-gradient(90deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    box-shadow: 0 2px 8px #ff6b6b33;
+}
+
+.logout-btn:hover {
+    background: linear-gradient(90deg, #e55555 0%, #dd4a5f 100%);
+    box-shadow: 0 4px 12px #ff6b6b40;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #eee;
+}
+
+.tab {
+    padding: 12px 30px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-weight: 700;
+}
+
+.tab.active {
+    border-bottom: 3px solid #007bff;
+    color: #007bff;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+#calendar {
+    margin-top: 20px;
+}
+
+.labflow-filter-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: end;
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+    border: 1px solid #dbe7f7;
+}
+
+.labflow-filter-bar label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 700;
+    color: #24324a;
+}
+
+.labflow-filter-bar input,
+.labflow-filter-bar select {
+    min-width: 160px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid #cbd8ea;
+    background: #fff;
+    color: #1f2d3d;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    outline: none;
+}
+
+.labflow-filter-bar input:focus,
+.labflow-filter-bar select:focus {
+    border-color: #2f80ed;
+    box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.12);
+}
+
+.labflow-filter-bar > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.labflow-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.labflow-btn:hover {
+    transform: translateY(-1px);
+}
+
+.labflow-btn-primary {
+    background: linear-gradient(90deg, #2f80ed 0%, #56ccf2 100%);
+    color: #fff;
+    box-shadow: 0 10px 20px rgba(47, 128, 237, 0.25);
+}
+
+.labflow-btn-danger {
+    background: linear-gradient(90deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: #fff;
+    box-shadow: 0 10px 20px rgba(238, 90, 111, 0.22);
+}
+
+.labflow-btn-secondary {
+    background: #eef2f7;
+    color: #1f2937;
+}
+
+.labflow-btn-sm {
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.92rem;
+}
+
+.labflow-inline-input,
+.labflow-inline-select {
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid #cbd8ea;
+    background: #fff;
+    color: #1f2d3d;
+    width: 100%;
+    box-sizing: border-box;
+}

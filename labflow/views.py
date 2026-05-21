@@ -1,68 +1,87 @@
-
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
-from django.utils.decorators import method_decorator
-from django.views import View
+from labflow.models import Uzytkownik, Laboratorium, Sprzet, Rezerwacja, Serwis
 
-# ...existing imports and viewsets...
+# Pomocnicza funkcja do pobierania zalogowanego użytkownika
+def get_logged_user(request):
+    user_id = request.session.get('user_id')
+    if user_id:
+        try:
+            return Uzytkownik.objects.get(id=user_id)
+        except Uzytkownik.DoesNotExist:
+            return None
+    return None
+
+
+@csrf_protect
+def admin_login_view(request):
+    error = None
+    if request.method == 'POST':
+        email = request.POST.get('username')
+        password = request.POST.get('password')
+        try:
+            user = Uzytkownik.objects.get(email=email, rola='admin')
+            if user.haslo == password:
+                request.session['user_id'] = user.id
+                return redirect('/admin-panel/')
+            else:
+                error = 'Nieprawidłowe hasło.'
+        except Uzytkownik.DoesNotExist:
+            error = 'Nie znaleziono użytkownika.'
+    return render(request, 'admin_login.html', {'error': error})
+
+def admin_panel_view(request):
+    user = get_logged_user(request)
+    if not user or user.rola != 'admin':
+        return redirect('/admin-login/')
+    # Dodaj logikę panelu admina
+    return render(request, 'admin_panel.html', {'user': user})
+
 
 
 @csrf_protect
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('/panel/')
+    error = None
     if request.method == 'POST':
-        username = request.POST.get('username')
+        email = request.POST.get('username')
         password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('/panel/')
-        else:
-            return render(request, 'login.html', {'form': {'errors': True}})
-    return render(request, 'login.html', {'form': {}})
+        try:
+            user = Uzytkownik.objects.get(email=email)
+            if user.haslo == password:
+                request.session['user_id'] = user.id
+                return redirect('/panel/')
+            else:
+                error = 'Nieprawidłowe hasło.'
+        except Uzytkownik.DoesNotExist:
+            error = 'Nie znaleziono użytkownika.'
+    return render(request, 'login.html', {'error': error})
 
-@login_required(login_url='/')
+
+@csrf_protect
+def register_view(request):
+    error = None
+    if request.method == 'POST':
+        imie = request.POST.get('imie')
+        nazwisko = request.POST.get('nazwisko')
+        email = request.POST.get('email')
+        rola = request.POST.get('rola', 'student')
+        haslo = request.POST.get('password')
+        if Uzytkownik.objects.filter(email=email).exists():
+            error = 'Użytkownik o tym emailu już istnieje.'
+        else:
+            user = Uzytkownik.objects.create(imie=imie, nazwisko=nazwisko, email=email, rola=rola, haslo=haslo)
+            request.session['user_id'] = user.id
+            return redirect('/panel/')
+    return render(request, 'register.html', {'error': error})
+
+
 def panel_view(request):
-    return render(request, 'panel.html')
+    user = get_logged_user(request)
+    if not user:
+        return redirect('/')
+    return render(request, 'panel.html', {'user': user})
+
 
 def logout_view(request):
-    logout(request)
+    request.session.flush()
     return redirect('/')
-from rest_framework import viewsets, permissions
-from .models import Laboratorium, Uzytkownik, Sprzet, Rezerwacja, Serwis
-from .serializers import (
-    LaboratoriumSerializer, UzytkownikSerializer, SprzetSerializer,
-    RezerwacjaSerializer, SerwisSerializer
-)
-
-class LaboratoriumViewSet(viewsets.ModelViewSet):
-    queryset = Laboratorium.objects.all()
-    serializer_class = LaboratoriumSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-class UzytkownikViewSet(viewsets.ModelViewSet):
-    queryset = Uzytkownik.objects.all()
-    serializer_class = UzytkownikSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-class SprzetViewSet(viewsets.ModelViewSet):
-    queryset = Sprzet.objects.all()
-    serializer_class = SprzetSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
-class RezerwacjaViewSet(viewsets.ModelViewSet):
-    queryset = Rezerwacja.objects.all()
-    serializer_class = RezerwacjaSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(uzytkownik=self.request.user)
-
-class SerwisViewSet(viewsets.ModelViewSet):
-    queryset = Serwis.objects.all()
-    serializer_class = SerwisSerializer
-    permission_classes = [permissions.IsAuthenticated]

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>LabFlow ADMIN Panel</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/admin_panel.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+</head>
+<body>
+    <div class="admin-panel-container">
+        <h2>LabFlow ADMIN Panel</h2>
+        <p style="text-align:center; font-size:1.1rem; color:#b71c1c; font-weight:600;">Witaj, {{ user.imie }} {{ user.nazwisko }}! Jesteś zalogowany jako administrator.</p>
+
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="podsumowanie">Podsumowanie</button>
+            <button class="admin-tab" data-tab="uzytkownicy">Użytkownicy</button>
+            <button class="admin-tab" data-tab="laboratoria">Laboratoria</button>
+            <button class="admin-tab" data-tab="sprzet">Sprzęt</button>
+            <button class="admin-tab" data-tab="rezerwacje">Rezerwacje</button>
+            <button class="admin-tab" data-tab="serwis">Serwis</button>
+        </div>
+
+        <div class="admin-tab-content active" id="tab-podsumowanie">
+            <div class="admin-section">
+                <h3>Podsumowanie</h3>
+                <div class="admin-summary">Liczba użytkowników: <b>{{ users|length }}</b></div>
+                <div class="admin-summary">Liczba laboratoriów: <b>{{ labs|length }}</b></div>
+                <div class="admin-summary">Liczba sprzętów: <b>{{ devices|length }}</b></div>
+                <div class="admin-summary">Liczba rezerwacji: <b>{{ reservations|length }}</b></div>
+                <div class="admin-summary">Liczba zgłoszeń serwisowych: <b>{{ services|length }}</b></div>
+            </div>
+        </div>
+        <div class="admin-tab-content" id="tab-uzytkownicy">
+            <div class="admin-section">
+                <h3>Użytkownicy</h3>
+                <table class="admin-table">
+                    <tr><th>ID</th><th>Email</th><th>Imię</th><th>Nazwisko</th><th>Rola</th><th>Akcje</th></tr>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ u.id }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>{{ u.imie }}</td>
+                        <td>{{ u.nazwisko }}</td>
+                        <td>
+                            <span class="status-badge status-{{ u.rola }}">{{ u.rola }}</span>
+                        </td>
+                        <td>
+                            <button class="edit-btn" title="Edytuj użytkownika">✏️</button>
+                            <button class="delete-btn" title="Usuń użytkownika">🗑️</button>
+                            {% if u.rola == 'admin' %}<b>Administrator</b>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="admin-tab-content" id="tab-laboratoria">
+            <div class="admin-section">
+                <h3>Laboratoria</h3>
+                <table class="admin-table">
+                    <tr><th>ID</th><th>Nazwa</th><th>Lokalizacja</th><th>Opis</th></tr>
+                    {% for l in labs %}
+                    <tr>
+                        <td>{{ l.id }}</td>
+                        <td>{{ l.nazwa }}</td>
+                        <td>{{ l.lokalizacja }}</td>
+                        <td>{{ l.opis }}</td>
+                        <td>
+                            <button class="edit-btn" title="Edytuj laboratorium">✏️</button>
+                            <button class="delete-btn" title="Usuń laboratorium">🗑️</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="admin-tab-content" id="tab-sprzet">
+            <div class="admin-section">
+                <h3>Sprzęt</h3>
+                <table class="admin-table">
+                    <tr><th>ID</th><th>Nazwa</th><th>Kategoria</th><th>Status</th><th>Laboratorium</th></tr>
+                    {% for s in devices %}
+                    <tr>
+                        <td>{{ s.id }}</td>
+                        <td>{{ s.nazwa }}</td>
+                        <td>{{ s.kategoria }}</td>
+                        <td><span class="status-badge status-{{ s.status }}">{{ s.status }}</span></td>
+                        <td>{{ s.laboratorium.nazwa }}</td>
+                        <td>
+                            <button class="edit-btn" title="Edytuj sprzęt">✏️</button>
+                            <button class="delete-btn" title="Usuń sprzęt">🗑️</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="admin-tab-content" id="tab-rezerwacje">
+            <div class="admin-section">
+                <h3>Rezerwacje</h3>
+                <table class="admin-table">
+                    <tr><th>ID</th><th>Sprzęt</th><th>Użytkownik</th><th>Od</th><th>Do</th><th>Status</th><th>Akcje</th></tr>
+                    {% for r in reservations %}
+                    <tr>
+                        <td>{{ r.id }}</td>
+                        <td>{{ r.sprzet.nazwa }}</td>
+                        <td>{{ r.uzytkownik.email }}</td>
+                        <td>{{ r.data_rozpoczecia }}</td>
+                        <td>{{ r.data_zakonczenia }}</td>
+                        <td><span class="status-badge status-{{ r.status }}">{{ r.status }}</span></td>
+                        <td>
+                            {% if r.status == 'oczekująca' %}
+                            <form method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="confirm_reservation_id" value="{{ r.id }}">
+                                <button type="submit" class="confirm-btn">Potwierdź</button>
+                            </form>
+                            {% endif %}
+                            <button class="edit-btn" type="button" title="Edytuj rezerwację">✏️</button>
+                            <button class="delete-btn" type="button" title="Usuń rezerwację">🗑️</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div class="admin-tab-content" id="tab-serwis">
+            <div class="admin-section">
+                <h3>Zgłoszenia serwisowe</h3>
+                <table class="admin-table">
+                    <tr><th>ID</th><th>Sprzęt</th><th>Data zgłoszenia</th><th>Opis</th><th>Status</th></tr>
+                    {% for s in services %}
+                    <tr>
+                        <td>{{ s.id }}</td>
+                        <td>{{ s.sprzet.nazwa }}</td>
+                        <td>{{ s.data_zgloszenia }}</td>
+                        <td>{{ s.opis }}</td>
+                        <td><span class="status-badge status-{{ s.status }}">{{ s.status }}</span></td>
+                        <td>
+                            <button class="edit-btn" title="Edytuj zgłoszenie">✏️</button>
+                            <button class="delete-btn" title="Usuń zgłoszenie">🗑️</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <a href="/logout/" class="logout-btn">Wyloguj się</a>
+        <!-- MODAL: Edycja użytkownika -->
+        <div id="modal-user-edit" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" id="close-user-edit">&times;</span>
+                <h3>Edytuj użytkownika</h3>
+                <form id="user-edit-form">
+                    <input type="hidden" id="user-edit-id">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    <label>Email:<input type="email" id="user-edit-email" required></label><br>
+                    <label>Imię:<input type="text" id="user-edit-imie" required></label><br>
+                    <label>Nazwisko:<input type="text" id="user-edit-nazwisko" required></label><br>
+                    <label>Rola:
+                        <select id="user-edit-rola">
+                            <option value="admin">admin</option>
+                            <option value="pracownik">pracownik</option>
+                            <option value="student">student</option>
+                        </select>
+                    </label><br>
+                    <button type="submit" class="confirm-btn">Zapisz zmiany</button>
+                </form>
+            </div>
+        </div>
+        <!-- MODAL: Edycja rezerwacji -->
+        <div id="modal-res-edit" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" id="close-res-edit">&times;</span>
+                <h3>Edytuj rezerwację</h3>
+                <form id="res-edit-form">
+                    <input type="hidden" id="res-edit-id">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    <label>Status:
+                        <select id="res-edit-status">
+                            <option value="oczekująca">oczekująca</option>
+                            <option value="zaakceptowana">zaakceptowana</option>
+                            <option value="odrzucona">odrzucona</option>
+                            <option value="zakończona">zakończona</option>
+                        </select>
+                    </label><br>
+                    <label>Od:<input type="datetime-local" id="res-edit-od" required></label><br>
+                    <label>Do:<input type="datetime-local" id="res-edit-do" required></label><br>
+                    <button type="submit" class="confirm-btn">Zapisz zmiany</button>
+                </form>
+            </div>
+        </div>
+        <!-- MODAL: Edycja serwisu -->
+        <div id="modal-serwis-edit" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close" id="close-serwis-edit">&times;</span>
+                <h3>Edytuj zgłoszenie serwisowe</h3>
+                <form id="serwis-edit-form">
+                    <input type="hidden" id="serwis-edit-id">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    <label>Status:
+                        <select id="serwis-edit-status">
+                            <option value="nowe">nowe</option>
+                            <option value="w trakcie">w trakcie</option>
+                            <option value="zakończone">zakończone</option>
+                        </select>
+                    </label><br>
+                    <label>Opis:<input type="text" id="serwis-edit-opis" required></label><br>
+                    <button type="submit" class="confirm-btn">Zapisz zmiany</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- MODAL: Edycja laboratorium -->
+    <div id="modal-lab-edit" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" id="close-lab-edit">&times;</span>
+            <h3>Edytuj laboratorium</h3>
+            <form id="lab-edit-form">
+                <input type="hidden" id="lab-edit-id">
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <label>Nazwa:<input type="text" id="lab-edit-nazwa" required></label><br>
+                <label>Lokalizacja:<input type="text" id="lab-edit-lokalizacja" required></label><br>
+                <label>Opis:<input type="text" id="lab-edit-opis"></label><br>
+                <button type="submit" class="confirm-btn">Zapisz zmiany</button>
+            </form>
+        </div>
+    </div>
+    <!-- MODAL: Edycja sprzętu -->
+    <div id="modal-device-edit" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" id="close-device-edit">&times;</span>
+            <h3>Edytuj sprzęt</h3>
+            <form id="device-edit-form">
+                <input type="hidden" id="device-edit-id">
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <label>Nazwa:<input type="text" id="device-edit-nazwa" required></label><br>
+                <label>Kategoria:<input type="text" id="device-edit-kategoria" required></label><br>
+                <label>Status:
+                    <select id="device-edit-status">
+                        <option value="dostępny">dostępny</option>
+                        <option value="zarezerwowany">zarezerwowany</option>
+                        <option value="serwis">serwis</option>
+                    </select>
+                </label><br>
+                <label>Laboratorium:<input type="text" id="device-edit-lab" required></label><br>
+                <button type="submit" class="confirm-btn">Zapisz zmiany</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // MODALE: referencje i zamykanie
+        const modalUser = document.getElementById('modal-user-edit');
+        const closeUser = document.getElementById('close-user-edit');
+        if(closeUser) closeUser.onclick = () => { modalUser.style.display = 'none'; };
+        const modalRes = document.getElementById('modal-res-edit');
+        const closeRes = document.getElementById('close-res-edit');
+        if(closeRes) closeRes.onclick = () => { modalRes.style.display = 'none'; };
+        const modalSerwis = document.getElementById('modal-serwis-edit');
+        const closeSerwis = document.getElementById('close-serwis-edit');
+        if(closeSerwis) closeSerwis.onclick = () => { modalSerwis.style.display = 'none'; };
+        window.addEventListener('click', function(e) {
+            if (modalUser && e.target === modalUser) modalUser.style.display = 'none';
+            if (modalRes && e.target === modalRes) modalRes.style.display = 'none';
+            if (modalSerwis && e.target === modalSerwis) modalSerwis.style.display = 'none';
+        }, true);
+    // Obsługa zakładek admina
+    document.querySelectorAll('.admin-tab').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.admin-tab-content').forEach(tab => tab.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+    // MODAL obsługa
+    const modalLab = document.getElementById('modal-lab-edit');
+    const closeLab = document.getElementById('close-lab-edit');
+    closeLab.onclick = () => { modalLab.style.display = 'none'; };
+    // Poprawiona obsługa zamykania modali bez blokowania zakładek
+    window.addEventListener('click', function(e) {
+        if (modalLab && e.target === modalLab) modalLab.style.display = 'none';
+    }, true); // true = faza capture, najpierw obsłuż modal, potem zakładki
+
+    const modalDevice = document.getElementById('modal-device-edit');
+    const closeDevice = document.getElementById('close-device-edit');
+    closeDevice.onclick = () => { modalDevice.style.display = 'none'; };
+    window.addEventListener('click', function(e) {
+        if (modalDevice && e.target === modalDevice) modalDevice.style.display = 'none';
+    }, true); // true = faza capture, najpierw obsłuż modal, potem zakładki
+
+    // --- INICJALIZACJA OBSŁUGI MODALI I PRZYCISKÓW ---
+    function initAdminPanelActions() {
+                // Edycja użytkowników
+                const userTable = document.querySelector('#tab-uzytkownicy .admin-table');
+                if (userTable) userTable.onclick = function(e) {
+                    if (e.target.classList.contains('edit-btn')) {
+                        const tr = e.target.closest('tr');
+                        document.getElementById('user-edit-id').value = tr.children[0].innerText;
+                        document.getElementById('user-edit-email').value = tr.children[1].innerText;
+                        document.getElementById('user-edit-imie').value = tr.children[2].innerText;
+                        document.getElementById('user-edit-nazwisko').value = tr.children[3].innerText;
+                        // Pobierz tekst z badge
+                        const badge = tr.querySelector('.status-badge');
+                        document.getElementById('user-edit-rola').value = badge ? badge.innerText.trim() : '';
+                        modalUser.style.display = 'block';
+                    }
+                    if (e.target.classList.contains('delete-btn')) {
+                        if(confirm('Na pewno usunąć użytkownika?')) {
+                            const id = e.target.closest('tr').children[0].innerText;
+                            fetch(`/api/uzytkownicy/${id}/`, {
+                                method: 'DELETE',
+                                headers: { 'X-CSRFToken': (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value }
+                            }).then(res => { if(res.ok) location.reload(); else alert('Błąd usuwania!'); });
+                        }
+                    }
+                };
+                // Edycja rezerwacji
+                const resTable = document.querySelector('#tab-rezerwacje .admin-table');
+                if (resTable) resTable.onclick = function(e) {
+                    if (e.target.classList.contains('edit-btn')) {
+                        e.preventDefault();
+                        const tr = e.target.closest('tr');
+                        document.getElementById('res-edit-id').value = tr.children[0].innerText;
+                        document.getElementById('res-edit-status').value = tr.children[5].innerText.trim();
+                        document.getElementById('res-edit-od').value = new Date(tr.children[3].innerText).toISOString().slice(0,16);
+                        document.getElementById('res-edit-do').value = new Date(tr.children[4].innerText).toISOString().slice(0,16);
+                        modalRes.style.display = 'block';
+                    }
+                    if (e.target.classList.contains('delete-btn')) {
+                        e.preventDefault();
+                        if(confirm('Na pewno usunąć rezerwację?')) {
+                            const id = e.target.closest('tr').children[0].innerText;
+                            fetch(`/api/rezerwacje/${id}/`, {
+                                method: 'DELETE',
+                                headers: { 'X-CSRFToken': (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value }
+                            }).then(res => { if(res.ok) location.reload(); else alert('Błąd usuwania!'); });
+                        }
+                    }
+                };
+                // Edycja serwisu
+                const serwisTable = document.querySelector('#tab-serwis .admin-table');
+                if (serwisTable) serwisTable.onclick = function(e) {
+                    if (e.target.classList.contains('edit-btn')) {
+                        const tr = e.target.closest('tr');
+                        document.getElementById('serwis-edit-id').value = tr.children[0].innerText;
+                        document.getElementById('serwis-edit-status').value = tr.children[4].innerText.trim();
+                        document.getElementById('serwis-edit-opis').value = tr.children[3].innerText;
+                        modalSerwis.style.display = 'block';
+                    }
+                    if (e.target.classList.contains('delete-btn')) {
+                        if(confirm('Na pewno usunąć zgłoszenie serwisowe?')) {
+                            const id = e.target.closest('tr').children[0].innerText;
+                            fetch(`/api/serwis/${id}/`, {
+                                method: 'DELETE',
+                                headers: { 'X-CSRFToken': (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value }
+                            }).then(res => { if(res.ok) location.reload(); else alert('Błąd usuwania!'); });
+                        }
+                    }
+                };
+        // Edycja laboratoriów
+        const labTable = document.querySelector('#tab-laboratoria .admin-table');
+        if (labTable) labTable.onclick = function(e) {
+            if (e.target.classList.contains('edit-btn')) {
+                const tr = e.target.closest('tr');
+                document.getElementById('lab-edit-id').value = tr.children[0].innerText;
+                document.getElementById('lab-edit-nazwa').value = tr.children[1].innerText;
+                document.getElementById('lab-edit-lokalizacja').value = tr.children[2].innerText;
+                document.getElementById('lab-edit-opis').value = tr.children[3].innerText;
+                modalLab.style.display = 'block';
+            }
+            if (e.target.classList.contains('delete-btn')) {
+                if(confirm('Na pewno usunąć laboratorium?')) {
+                    const id = e.target.closest('tr').children[0].innerText;
+                    fetch(`/api/laboratoria/${id}/`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value }
+                    }).then(res => { if(res.ok) location.reload(); else alert('Błąd usuwania!'); });
+                }
+            }
+        };
+        // Edycja sprzętu
+        const deviceTable = document.querySelector('#tab-sprzet .admin-table');
+        if (deviceTable) deviceTable.onclick = function(e) {
+            if (e.target.classList.contains('edit-btn')) {
+                const tr = e.target.closest('tr');
+                document.getElementById('device-edit-id').value = tr.children[0].innerText;
+                document.getElementById('device-edit-nazwa').value = tr.children[1].innerText;
+                document.getElementById('device-edit-kategoria').value = tr.children[2].innerText;
+                document.getElementById('device-edit-status').value = tr.children[3].innerText.trim();
+                document.getElementById('device-edit-lab').value = tr.children[4].innerText;
+                modalDevice.style.display = 'block';
+            }
+            if (e.target.classList.contains('delete-btn')) {
+                if(confirm('Na pewno usunąć sprzęt?')) {
+                    const id = e.target.closest('tr').children[0].innerText;
+                    fetch(`/api/sprzet/${id}/`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value }
+                    }).then(res => { if(res.ok) location.reload(); else alert('Błąd usuwania!'); });
+                }
+            }
+        };
+
+        // ...pozostała obsługa laboratoriów i sprzętu...
+    }
+    // Wywołaj na starcie i po każdej zmianie zakładki
+    initAdminPanelActions();
+    document.querySelectorAll('.admin-tab').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.admin-tab-content').forEach(tab => tab.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            setTimeout(initAdminPanelActions, 10); // re-inicjalizuj eventy po zmianie zakładki
+        });
+    });
+    </script>
+    <script>
+        // --- ZAPIS MODALI EDYCJI ---
+        // Użytkownik
+        const userEditForm = document.getElementById('user-edit-form');
+        if(userEditForm) userEditForm.onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('user-edit-id').value;
+            fetch(`/api/uzytkownicy/${id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value
+                },
+                body: JSON.stringify({
+                    email: document.getElementById('user-edit-email').value,
+                    imie: document.getElementById('user-edit-imie').value,
+                    nazwisko: document.getElementById('user-edit-nazwisko').value,
+                    rola: document.getElementById('user-edit-rola').value
+                })
+            }).then(res => { if(res.ok) location.reload(); else alert('Błąd edycji!'); });
+        };
+        // Rezerwacja
+        const resEditForm = document.getElementById('res-edit-form');
+        if(resEditForm) resEditForm.onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('res-edit-id').value;
+            fetch(`/api/rezerwacje/${id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value
+                },
+                body: JSON.stringify({
+                    status: document.getElementById('res-edit-status').value,
+                    data_rozpoczecia: document.getElementById('res-edit-od').value,
+                    data_zakonczenia: document.getElementById('res-edit-do').value
+                })
+            }).then(res => { if(res.ok) location.reload(); else alert('Błąd edycji!'); });
+        };
+        // Serwis
+        const serwisEditForm = document.getElementById('serwis-edit-form');
+        if(serwisEditForm) serwisEditForm.onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('serwis-edit-id').value;
+            fetch(`/api/serwis/${id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value
+                },
+                body: JSON.stringify({
+                    status: document.getElementById('serwis-edit-status').value,
+                    opis: document.getElementById('serwis-edit-opis').value
+                })
+            }).then(res => { if(res.ok) location.reload(); else alert('Błąd edycji!'); });
+        };
+        // Laboratorium
+        const labEditForm = document.getElementById('lab-edit-form');
+        if(labEditForm) labEditForm.onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('lab-edit-id').value;
+            fetch(`/api/laboratoria/${id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': (document.querySelector('input[name=csrfmiddlewaretoken]')||{}).value
+                },
+                body: JSON.stringify({
+                    nazwa: document.getElementById('lab-edit-nazwa').value,
+                    lokalizacja: document.getElementById('lab-edit-lokalizacja').value,
+                    opis: document.getElementById('lab-edit-opis').value
+                })
+            }).then(res => { if(res.ok) location.reload(); else alert('Błąd edycji!'); });
+        };
+    </script>
+    <style>
+    .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); }
+    .modal-content { background:#23262f; color:#fff; margin:10% auto; padding:30px 30px 20px 30px; border-radius:10px; width:350px; box-shadow:0 4px 24px #000a; position:relative; }
+    .modal-content label { display:block; margin-bottom:10px; }
+    .modal-content input { width:100%; padding:7px 8px; border-radius:5px; border:1px solid #444; margin-top:3px; background:#181a20; color:#fff; }
+    .modal-content .close { position:absolute; right:18px; top:10px; font-size:1.7rem; cursor:pointer; color:#fff; }
+    </style>
+            </body>
+            </html>

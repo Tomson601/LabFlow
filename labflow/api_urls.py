@@ -1,6 +1,15 @@
-from django.urls import path
-from rest_framework.authtoken.views import obtain_auth_token
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+from .api_views import LaboratoriumViewSet, RezerwacjaViewSet, SerwisViewSet, SprzetViewSet, UzytkownikViewSet
+
+router = DefaultRouter()
+router.register(r'laboratoria', LaboratoriumViewSet, basename='laboratoria')
+router.register(r'uzytkownicy', UzytkownikViewSet, basename='uzytkownicy')
+router.register(r'sprzet', SprzetViewSet, basename='sprzet')
+router.register(r'rezerwacje', RezerwacjaViewSet, basename='rezerwacje')
+router.register(r'serwis', SerwisViewSet, basename='serwis')
 
 urlpatterns = [
-    path('login/', obtain_auth_token, name='api_token_auth'),
+	path('', include(router.urls)),
 ]
