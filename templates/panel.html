@@ -38,6 +38,9 @@
             <button class="tab" id="sprzet-tab" onclick="showTab('sprzet')">Sprzęt</button>
             <button class="tab" id="laboratoria-tab" onclick="showTab('laboratoria')">Laboratoria</button>
             <button class="tab" id="serwis-tab" onclick="showTab('serwis')">Serwis</button>
+            {% if user.rola == 'admin' %}
+            <button class="tab" id="uzytkownicy-tab" onclick="showTab('uzytkownicy')">Użytkownicy</button>
+            {% endif %}
         </div>
 
         {% include 'panel_kalendarz.html' %}
@@ -45,6 +48,9 @@
         {% include 'panel_sprzet.html' %}
         {% include 'panel_laboratoria.html' %}
         {% include 'panel_serwis.html' %}
+        {% if user.rola == 'admin' %}
+        {% include 'panel_uzytkownicy.html' %}
+        {% endif %}
     </div>
     {{ user.id|json_script:"current-user-id" }}
     {{ user.rola|default:'uzytkownik'|json_script:"current-user-role" }}

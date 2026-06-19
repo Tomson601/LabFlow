@@ -14,22 +14,16 @@ function showTab(tab) {
 
 async function fetchEvents(info, successCallback, failureCallback) {
     try {
-        console.log("Pobieram dane z API...");
-
         const response = await fetch('/api/rezerwacje/', {
             credentials: 'include',
             cache: 'no-store'
         });
-
-        console.log("Status:", response.status);
 
         if (!response.ok) {
             throw new Error("HTTP error " + response.status);
         }
 
         const data = await response.json();
-        console.log("Dane:", data);
-
         const events = data.map(item => ({
             title: 'Rezerwacja: ' + (item.sprzet_nazwa || item.sprzet),
             start: item.data_rozpoczecia,
@@ -39,8 +33,6 @@ async function fetchEvents(info, successCallback, failureCallback) {
                 status: item.status
             }
         }));
-
-        console.log("Events:", events);
 
         successCallback(events);
 

@@ -1,4 +1,4 @@
-# Plik nie używany, ale potrzebny do uruchomienia projektu Django produkcyjnie.
+# Plik potrzebny do uruchomienia projektu Django produkcyjnie.
 import os
 
 from django.core.asgi import get_asgi_application

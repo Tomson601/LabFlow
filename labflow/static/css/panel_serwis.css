@@ -25,7 +25,7 @@
     padding: 2px 14px;
     display: inline-block;
 }
-/* Panel Serwis Module */
+
 
 #serwis-content h2 {
     margin-bottom: 18px;
@@ -145,4 +145,10 @@
 
 #lista-serwis button:not(.labflow-btn):hover {
     background: #a71d2a;
+}
+
+#opis-serwis {
+    height: 100px;
+    width: 100%;
+    resize: vertical;
 }

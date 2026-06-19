@@ -9,10 +9,8 @@
 <body>
     <div class="register-container">
         <h2>Zarejestruj się</h2>
-        {% if errors %}
-            {% for error in errors %}
-                <div class="error">{{ error }}</div>
-            {% endfor %}
+        {% if error %}
+            <div class="error">{{ error }}</div>
         {% endif %}
         <form method="post">
             {% csrf_token %}
@@ -21,7 +19,6 @@
                 <input type="text" name="nazwisko" placeholder="Nazwisko" required>
             </div>
             <input type="email" name="email" placeholder="Email" required>
-            <input type="text" name="username" placeholder="Nazwa użytkownika" required>
             <input type="password" name="password" placeholder="Hasło" required>
             <input type="password" name="password_confirm" placeholder="Potwierdź hasło" required>
             <button type="submit">Zarejestruj się</button>

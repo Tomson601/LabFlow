@@ -1,10 +1,7 @@
-from django.urls import path, include
+from django.urls import include, path
 from labflow.views import login_view, panel_view, logout_view, register_view, admin_login_view, admin_panel_view
-from labflow import views
 from django.conf import settings
 from django.conf.urls.static import static
-
-
 
 urlpatterns = [
     path('', login_view, name='login'),

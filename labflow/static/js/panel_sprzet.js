@@ -3,6 +3,7 @@
 let wszystkieSprzety = [];
 let wszystkieLaboratoria = [];
 let wszystkieKategorie = [];
+let aktualnieEdytowanySprzet = null;
 
 function escapeHtml(value) {
     return String(value)
@@ -31,6 +32,13 @@ async function zaladujLaboratoriaSprzet() {
         labFiltr.innerHTML = '<option value="">Wszystkie</option>' + data.map(l => `<option value="${l.id}">${escapeHtml(l.nazwa || '')}</option>`).join('');
         labFiltr.value = wybrane;
     }
+
+    const editLabSelect = document.getElementById('edit-sprzet-laboratorium');
+    if (editLabSelect) {
+        const wybrane = editLabSelect.value;
+        editLabSelect.innerHTML = data.map(lab => `<option value="${lab.id}">${escapeHtml(lab.nazwa || '')}</option>`).join('');
+        editLabSelect.value = wybrane;
+    }
 }
 
 const sprzetForm = document.getElementById('sprzet-form');
@@ -39,7 +47,7 @@ if (sprzetForm) {
         e.preventDefault();
         const nazwa = document.getElementById('nazwa').value;
         const kategoria = document.getElementById('kategoria').value;
-        const status = document.getElementById('status').value;
+        const status = 'dostępny';
         const laboratorium = document.getElementById('laboratorium-sprzet').value;
         const res = await fetch('/api/sprzet/', {
             method: 'POST',
@@ -113,14 +121,19 @@ function renderujSprzet() {
             (!filtry.nazwa || nazwa.includes(filtry.nazwa));
     });
 
+    if (!sprzety.length) {
+        kontener.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">Brak sprzętu</p>';
+        return;
+    }
+
     let html = '<table><tr><th>Nazwa</th><th>Kategoria</th><th>Status</th><th>Laboratorium</th>' + (canManage ? '<th>Akcje</th>' : '') + '</tr>';
     html += sprzety.map(s => {
         const statusClass = s.status === 'dostępny' ? 'status-dostepny' : s.status === 'zarezerwowany' ? 'status-zarezerwowany' : 'status-serwis';
         const statusCell = canManage
-            ? `<span class="${statusClass}">${escapeHtml(s.status || '')}</span> <select class="labflow-inline-select" onchange="zmienStatusSprzetu(${s.id}, this.value)">${['dostępny','zarezerwowany','serwis'].map(opt => `<option value="${opt}"${s.status===opt?' selected':''}>${opt}</option>`).join('')}</select>`
+            ? `<span class="${statusClass}">${escapeHtml(s.status || '')}</span>`
             : `<span class="${statusClass}">${escapeHtml(s.status || '')}</span>`;
         const akcjeCell = canManage
-            ? `<button class="labflow-btn labflow-btn-danger labflow-btn-sm" onclick="usunSprzet(${s.id})">Usuń</button>`
+            ? `<button class="labflow-btn labflow-btn-primary labflow-btn-sm" onclick="otworzModalSprzetu(${s.id})">Edytuj</button>`
             : '';
         return `<tr><td>${escapeHtml(s.nazwa || '')}</td><td>${escapeHtml(s.kategoria || '')}</td><td>${statusCell}</td><td>${escapeHtml(s.laboratorium_nazwa || '')}</td>${canManage ? `<td>${akcjeCell}</td>` : ''}</tr>`;
     }).join('');
@@ -135,25 +148,99 @@ async function usunSprzet(id) {
         headers: { 'X-CSRFToken': getCookie('csrftoken') }
     });
     if (res.ok) {
+        zamknijModalSprzetu();
+        await zaladujLaboratoriaSprzet();
         await pokazSprzet();
+        if (typeof zaladujSprzetSerwis === 'function') {
+            await zaladujSprzetSerwis();
+        }
     } else {
-        alert('Błąd usuwania!');
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Błąd usuwania!');
     }
 }
 
-async function zmienStatusSprzetu(id, status) {
-    const res = await fetch('/api/sprzet/' + id + '/', {
+function otworzModalSprzetu(id) {
+    const sprzet = wszystkieSprzety.find(item => Number(item.id) === Number(id));
+    if (!sprzet) return;
+
+    aktualnieEdytowanySprzet = id;
+
+    document.getElementById('edit-sprzet-id').value = id;
+    document.getElementById('edit-sprzet-nazwa').value = sprzet.nazwa || '';
+    document.getElementById('edit-sprzet-kategoria').value = sprzet.kategoria || '';
+    document.getElementById('edit-sprzet-laboratorium').value = String(sprzet.laboratorium || '');
+    
+
+     // Pokaż modal i overlay
+    const modal = document.getElementById('sprzet-modal');
+    const overlay = document.getElementById('modal-overlay');
+    
+    if (overlay) {
+        overlay.classList.add('active');
+    }
+    
+    if (modal) {
+        modal.classList.add('active');
+        // Zablokuj scroll
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function zamknijModalSprzetu() {
+    aktualnieEdytowanySprzet = null;
+    const modal = document.getElementById('sprzet-modal');
+    const overlay = document.getElementById('modal-overlay');
+    
+    if (modal) {
+        modal.classList.remove('active');
+    }
+    
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+    
+    // Przywróć scroll
+    document.body.style.overflow = 'auto';
+}
+
+
+async function zapiszEdytowanySprzet(e) {
+    e.preventDefault();
+    if (!aktualnieEdytowanySprzet) return;
+
+    const body = {
+        nazwa: document.getElementById('edit-sprzet-nazwa').value,
+        kategoria: document.getElementById('edit-sprzet-kategoria').value,
+        laboratorium: document.getElementById('edit-sprzet-laboratorium').value
+    };
+
+    const res = await fetch('/api/sprzet/' + aktualnieEdytowanySprzet + '/', {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken')
         },
-        body: JSON.stringify({ status })
+        body: JSON.stringify(body)
     });
-    if (!res.ok) {
-        alert('Błąd zmiany statusu!');
+
+    if (res.ok) {
+        zamknijModalSprzetu();
+        await zaladujLaboratoriaSprzet();
+        await pokazSprzet();
+        if (typeof zaladujSprzetSerwis === 'function') {
+            await zaladujSprzetSerwis();
+        }
+    } else {
+        alert('Błąd zapisu sprzętu!');
         await pokazSprzet();
     }
+}
+
+async function usunSprzetZModala() {
+    if (!aktualnieEdytowanySprzet) return;
+    await usunSprzet(aktualnieEdytowanySprzet);
+    zamknijModalSprzetu();
 }
 
 function podlaczFiltrySprzetu() {
@@ -168,6 +255,8 @@ function podlaczFiltrySprzetu() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     podlaczFiltrySprzetu();
+    document.getElementById('sprzet-edit-form')?.addEventListener('submit', zapiszEdytowanySprzet);
+    document.getElementById('modal-overlay')?.addEventListener('click', zamknijModalSprzetu);
     await zaladujLaboratoriaSprzet();
     await pokazSprzet();
 });

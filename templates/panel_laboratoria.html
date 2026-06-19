@@ -34,6 +34,28 @@
         </div>
     </div>
     <div id="lista-laboratoriow"></div>
+
+    <div id="laboratorium-modal" class="labflow-modal">
+        <div class="labflow-modal-content">
+            <div class="labflow-modal-header">
+                <h3>Edytuj laboratorium</h3>
+                <button type="button" class="labflow-modal-close" onclick="zamknijModalLaboratorium()">&times;</button>
+            </div>
+            <form id="laboratorium-edit-form">
+                <input type="hidden" id="edit-lab-id">
+                <label for="edit-lab-nazwa">Nazwa</label>
+                <input type="text" id="edit-lab-nazwa" required>
+                <label for="edit-lab-lokalizacja">Lokalizacja</label>
+                <input type="text" id="edit-lab-lokalizacja" required>
+                <label for="edit-lab-opis">Opis</label>
+                <input type="text" id="edit-lab-opis">
+                <div class="labflow-modal-actions">
+                    <button type="submit" class="labflow-btn labflow-btn-primary">Zapisz zmiany</button>
+                    <button type="button" id="usun-lab-modal-btn" class="labflow-btn labflow-btn-danger" onclick="usunLaboratoriumZModala()">Usuń laboratorium</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <link rel="stylesheet" href="/static/css/panel_laboratoria.css">

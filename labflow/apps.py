@@ -1,4 +1,4 @@
-# Plik potrzebny dla poprawnego działania projektu Django, ale nie zawiera żadnej logiki.
+# Plik potrzebny dla poprawnego działania projektu Django
 from django.apps import AppConfig
 
 class LabflowConfig(AppConfig):

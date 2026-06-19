@@ -97,6 +97,70 @@
     background: #0056b3;
 }
 
+.availability-panel {
+    margin-top: 12px;
+    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #dfe6ee;
+    border-radius: 6px;
+    color: #2f3b45;
+    font-size: 0.92rem;
+}
+
+.availability-title {
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.availability-panel ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.availability-panel li {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 7px 0;
+    border-top: 1px solid #eef2f6;
+}
+
+.availability-panel li:first-child {
+    border-top: none;
+}
+
+.availability-panel small {
+    color: #5c6670;
+    font-weight: 600;
+}
+
+.availability-empty {
+    color: #68747f;
+}
+
+.availability-warning {
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    background: #fff3cd;
+    border: 1px solid #ffe08a;
+    border-radius: 5px;
+    color: #856404;
+    font-weight: 600;
+}
+
+.availability-error {
+    color: #b00020;
+    font-weight: 600;
+}
+
+#rezerwacja-form input.availability-conflict-field,
+.labflow-modal-content input.availability-conflict-field {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
+}
+
 #lista-rezerwacji table {
     width: 100%;
     border-collapse: collapse;
@@ -122,8 +186,6 @@
 #lista-rezerwacji tr:last-child td {
     border-bottom: none;
 }
-
-/* ============ MODAL STYLES ============ */
 
 /* Overlay z blur efektem */
 #modal-overlay {
@@ -222,13 +284,13 @@
 .labflow-modal-content form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
 }
 
 .labflow-modal-content label {
     display: block;
     font-weight: 600;
     color: #333;
+    margin-top: 25px;
     margin-bottom: 8px;
     font-size: 14px;
     text-transform: capitalize;
@@ -236,7 +298,7 @@
 
 .labflow-modal-content input,
 .labflow-modal-content select {
-    width: 100%;
+    
     padding: 12px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
@@ -259,7 +321,7 @@
     margin-top: 28px;
     padding-top: 20px;
     border-top: 1px solid #e0e0e0;
-    justify-content: flex-end;
+    justify-content: center;
 }
 
 .labflow-modal-actions button {
@@ -311,6 +373,7 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(244, 67, 54, 0.3);
 }
+
 
 /* Responsive */
 @media (max-width: 600px) {

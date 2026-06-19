@@ -5,19 +5,28 @@
         <form id="serwis-form">
             <label for="sprzet-serwis">Sprzęt:</label>
             <select id="sprzet-serwis" name="sprzet" required></select>
-            <label for="data-zgloszenia">Data zgłoszenia:</label>
-            <input type="datetime-local" id="data-zgloszenia" name="data_zgloszenia" required>
             <label for="opis-serwis">Opis:</label>
-            <input type="text" id="opis-serwis" name="opis" required>
-            <label for="status-serwis">Status:</label>
-            <select id="status-serwis" name="status" required>
-                <option value="nowe">nowe</option>
-                <option value="w trakcie">w trakcie</option>
-                <option value="zakończone">zakończone</option>
-            </select>
+            <textarea id="opis-serwis" name="opis" required></textarea>
             <button type="submit" class="labflow-btn labflow-btn-primary">Dodaj</button>
             <button type="button" class="labflow-btn labflow-btn-secondary" onclick="document.getElementById('formularz-serwis').style.display='none'">Anuluj</button>
         </form>
+    </div>
+    <div id="filtry-serwis" class="labflow-filter-bar">
+        <div>
+            <label for="filtr-serwis-status">Status</label>
+            <select id="filtr-serwis-status">
+                <option value="">Wszystkie</option>
+                <option value="nowe">nowe</option>
+                <option value="w trakcie">w trakcie</option>
+                <option value="zakonczone">zakończone</option>
+            </select>
+        </div>
+        <div>
+            <label for="filtr-serwis-sprzet">Sprzęt</label>
+            <select id="filtr-serwis-sprzet">
+                <option value="">Wszystkie</option>
+            </select>
+        </div>
     </div>
     <div id="lista-serwis"></div>
 </div>

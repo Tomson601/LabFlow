@@ -2,6 +2,8 @@
 
 let wszystkieLaboratoriaRezerwacje = [];
 let wszystkieSprzetyRezerwacje = [];
+let wszystkieRezerwacje = [];
+let serwisowaneSprzetyWTrakcie = new Set();
 let aktualnieEdyowanaRezerwacja = null;
 
 function escapeHtml(value) {
@@ -15,20 +17,108 @@ function escapeHtml(value) {
 
 function formatDateTime(value) {
     if (!value) return '';
-    return value.replace('T', ' ').slice(0, 16);
+    return value.replace('T', ' ').replace(/([+-]\d{2}:\d{2}|Z)$/, '').slice(0, 16);
 }
 
 function toLocalInputValue(value) {
     if (!value) return '';
-    const date = new Date(value);
-    const offset = date.getTimezoneOffset();
-    return new Date(date.getTime() - offset * 60000).toISOString().slice(0, 16);
+    return value.replace('T', ' ').replace(/([+-]\d{2}:\d{2}|Z)$/, '').slice(0, 16).replace(' ', 'T');
+}
+
+function parseDateTime(value) {
+    if (!value) return null;
+    return new Date(String(value).replace(' ', 'T'));
+}
+
+function zakresNachodzi(startA, endA, startB, endB) {
+    return startA && endA && startB && endB && startA < endB && endA > startB;
+}
+
+function pobierzPolaDostepnosci(prefix = '') {
+    return {
+        sprzet: document.getElementById(prefix ? `${prefix}-sprzet` : 'sprzet'),
+        start: document.getElementById(prefix ? `${prefix}-data-rozpoczecia` : 'data_rozpoczecia'),
+        end: document.getElementById(prefix ? `${prefix}-data-zakonczenia` : 'data_zakonczenia'),
+        panel: document.getElementById(prefix ? `${prefix}-dostepnosc-sprzetu` : 'dostepnosc-sprzetu'),
+    };
+}
+
+async function pokazDostepnoscSprzetu(prefix = '') {
+    const pola = pobierzPolaDostepnosci(prefix);
+    if (!pola.panel || !pola.sprzet) return;
+
+    const sprzetId = pola.sprzet.value;
+    pola.start?.classList.remove('availability-conflict-field');
+    pola.end?.classList.remove('availability-conflict-field');
+
+    if (!sprzetId) {
+        pola.panel.innerHTML = '<div class="availability-empty">Wybierz sprzet, aby zobaczyc zajete terminy.</div>';
+        return;
+    }
+
+    const params = new URLSearchParams({ sprzet: sprzetId });
+    if (prefix === 'edit' && aktualnieEdyowanaRezerwacja) {
+        params.set('exclude', aktualnieEdyowanaRezerwacja);
+    }
+
+    const res = await fetch('/api/rezerwacje/dostepnosc/?' + params.toString());
+    if (!res.ok) {
+        pola.panel.innerHTML = '<div class="availability-error">Nie udalo sie pobrac dostepnosci.</div>';
+        return;
+    }
+
+    const rezerwacje = await res.json();
+    const wybranyStart = parseDateTime(pola.start?.value);
+    const wybranyKoniec = parseDateTime(pola.end?.value);
+    const maKonflikt = rezerwacje.some(r => zakresNachodzi(
+        wybranyStart,
+        wybranyKoniec,
+        parseDateTime(r.data_rozpoczecia),
+        parseDateTime(r.data_zakonczenia)
+    ));
+
+    if (maKonflikt) {
+        pola.start?.classList.add('availability-conflict-field');
+        pola.end?.classList.add('availability-conflict-field');
+    }
+
+    const listaTerminow = rezerwacje.length
+        ? `<ul>${rezerwacje.map(r => `<li><span>${formatDateTime(r.data_rozpoczecia)}</span><span>${formatDateTime(r.data_zakonczenia)}</span><small>${escapeHtml(r.status || '')}</small></li>`).join('')}</ul>`
+        : '<div class="availability-empty">Ten sprzet nie ma aktywnych rezerwacji.</div>';
+
+    pola.panel.innerHTML = `
+        <div class="availability-title">Zajete terminy wybranego sprzetu</div>
+        ${maKonflikt ? '<div class="availability-warning">Wybrany zakres nachodzi na istniejaca rezerwacje.</div>' : ''}
+        ${listaTerminow}
+    `;
+}
+
+function statusKey(status) {
+    const normalized = String(status || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+    if (normalized.includes('aktywna')) return 'aktywna';
+    if (normalized.includes('odrzucona')) return 'odrzucona';
+    if (normalized.includes('anulowana')) return 'anulowana';
+    if (normalized.includes('oczekuj')) return 'oczekujaca';
+    if (normalized.includes('zako')) return 'zakonczona';
+    return normalized;
 }
 
 function odswiezKalendarzJesliDostepny() {
     if (window.calendarInstance && typeof window.calendarInstance.refetchEvents === 'function') {
         window.calendarInstance.refetchEvents();
     }
+}
+
+function pobierzFiltryRezerwacji() {
+    return {
+        status: document.getElementById('filtr-rezerwacje-status')?.value || '',
+        uzytkownik: (document.getElementById('filtr-rezerwacje-uzytkownik')?.value || '').trim().toLowerCase(),
+    };
 }
 
 async function zaladujLaboratoria() {
@@ -56,13 +146,14 @@ async function zaladujSprzet() {
     if (!select) return;
     const currentValue = select.value;
     select.innerHTML = '<option value="">Wybierz sprzęt</option>';
-    wszystkieSprzetyRezerwacje.forEach(s => {
+    wszystkieSprzetyRezerwacje.filter(s => !serwisowaneSprzetyWTrakcie.has(String(s.id))).forEach(s => {
         const option = document.createElement('option');
         option.value = s.id;
         option.textContent = s.nazwa;
         select.appendChild(option);
     });
     select.value = currentValue;
+    await pokazDostepnoscSprzetu();
 }
 
 async function zaladujSprzetDoEdycji(selectedId) {
@@ -71,13 +162,28 @@ async function zaladujSprzetDoEdycji(selectedId) {
     const select = document.getElementById('edit-sprzet');
     if (!select) return;
     select.innerHTML = '';
-    data.forEach(s => {
+    data.filter(s => String(s.id) === String(selectedId) || !serwisowaneSprzetyWTrakcie.has(String(s.id))).forEach(s => {
         const option = document.createElement('option');
         option.value = s.id;
         option.textContent = s.nazwa;
         select.appendChild(option);
     });
     select.value = String(selectedId);
+    await pokazDostepnoscSprzetu('edit');
+}
+
+async function zaladujSprzetyWSerwisieWTrakcie() {
+    const res = await fetch('/api/serwis/');
+    if (!res.ok) {
+        serwisowaneSprzetyWTrakcie = new Set();
+        return;
+    }
+    const data = await res.json();
+    serwisowaneSprzetyWTrakcie = new Set(
+        data
+            .filter(s => statusKey(s.status) === 'w trakcie')
+            .map(s => String(s.sprzet))
+    );
 }
 
 const rezerwacjaForm = document.getElementById('rezerwacja-form');
@@ -112,7 +218,7 @@ if (rezerwacjaForm) {
     });
 }
 
-function otworzModalRezerwacji(id, sprzetId, sprzetNazwa, dataRozpoczecia, dataZakonczenia) {
+function otworzModalRezerwacji(id, sprzetId, dataRozpoczecia, dataZakonczenia) {
     aktualnieEdyowanaRezerwacja = id;
     
     // Uzupełnij dane formularza
@@ -156,15 +262,40 @@ function zamknijModalRezerwacji() {
 
 async function pokazRezerwacje() {
     const res = await fetch('/api/rezerwacje/');
-    const data = await res.json();
+    wszystkieRezerwacje = await res.json();
+    renderujRezerwacje();
+}
+
+function renderujRezerwacje() {
     const kontener = document.getElementById('lista-rezerwacji');
     if (!kontener) return;
 
-    kontener.innerHTML = '<table><tr><th>Sprzęt</th><th>Od</th><th>Do</th><th>Status</th><th>Akcje</th></tr>' +
+    const isAdmin = window.currentUserRole === 'admin';
+    const filtry = pobierzFiltryRezerwacji();
+    const data = wszystkieRezerwacje.filter(r => {
+        const statusMatches = !filtry.status || statusKey(r.status) === filtry.status;
+        const userText = `${r.uzytkownik_nazwa || ''} ${r.uzytkownik_email || ''} ${r.uzytkownik || ''}`.toLowerCase();
+        const userMatches = !isAdmin || !filtry.uzytkownik || userText.includes(filtry.uzytkownik);
+        return statusMatches && userMatches;
+    });
+
+    if (!data.length) {
+        kontener.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">Brak rezerwacji</p>';
+        return;
+    }
+
+    kontener.innerHTML = '<table><tr>' +
+        (isAdmin ? '<th>Użytkownik</th>' : '') +
+        '<th>Sprzęt</th><th>Od</th><th>Do</th><th>Status</th><th>Akcje</th></tr>' +
         data.map(r => {
-            const statusClass = r.status === 'oczekująca' ? 'rez-status-oczekujaca' : r.status === 'aktywna' ? 'rez-status-aktywna' : 'rez-status-anulowana';
-            const editButton = `<button class="labflow-btn labflow-btn-primary labflow-btn-sm" onclick="otworzModalRezerwacji(${r.id}, ${r.sprzet}, ${escapeHtml(JSON.stringify(r.sprzet_nazwa || ''))}, ${escapeHtml(JSON.stringify(r.data_rozpoczecia || ''))}, ${escapeHtml(JSON.stringify(r.data_zakonczenia || ''))})">Edytuj</button>`;
-            return `<tr><td>${escapeHtml(r.sprzet_nazwa || '')}</td><td>${formatDateTime(r.data_rozpoczecia)}</td><td>${formatDateTime(r.data_zakonczenia)}</td><td><span class="${statusClass}">${escapeHtml(r.status || '')}</span></td><td><div class="labflow-row-actions">${editButton}</div></td></tr>`;
+            const key = statusKey(r.status);
+            const statusClass = key === 'oczekujaca' ? 'rez-status-oczekujaca' : key === 'aktywna' ? 'rez-status-aktywna' : 'rez-status-anulowana';
+            const canEdit = !['zakonczona', 'odrzucona', 'anulowana'].includes(key);
+            const editButton = canEdit
+                ? `<button class="labflow-btn labflow-btn-primary labflow-btn-sm" onclick="otworzModalRezerwacji(${r.id}, ${r.sprzet}, ${escapeHtml(JSON.stringify(r.data_rozpoczecia || ''))}, ${escapeHtml(JSON.stringify(r.data_zakonczenia || ''))})">Edytuj</button>`
+                : '';
+            const userCell = isAdmin ? `<td>${escapeHtml(r.uzytkownik_nazwa || r.uzytkownik_email || r.uzytkownik || '')}</td>` : '';
+            return `<tr>${userCell}<td>${escapeHtml(r.sprzet_nazwa || '')}</td><td>${formatDateTime(r.data_rozpoczecia)}</td><td>${formatDateTime(r.data_zakonczenia)}</td><td><span class="${statusClass}">${escapeHtml(r.status || '')}</span></td><td><div class="labflow-row-actions">${editButton}</div></td></tr>`;
         }).join('') + '</table>';
 }
 
@@ -243,9 +374,17 @@ async function anulujRezerwacjeZModyla() {
 
 // Obsługa laboratorium change
 document.getElementById('laboratorium')?.addEventListener('change', zaladujSprzet);
+document.getElementById('sprzet')?.addEventListener('change', () => pokazDostepnoscSprzetu());
+document.getElementById('data_rozpoczecia')?.addEventListener('input', () => pokazDostepnoscSprzetu());
+document.getElementById('data_zakonczenia')?.addEventListener('input', () => pokazDostepnoscSprzetu());
+document.getElementById('edit-sprzet')?.addEventListener('change', () => pokazDostepnoscSprzetu('edit'));
+document.getElementById('edit-data-rozpoczecia')?.addEventListener('input', () => pokazDostepnoscSprzetu('edit'));
+document.getElementById('edit-data-zakonczenia')?.addEventListener('input', () => pokazDostepnoscSprzetu('edit'));
 
 // Obsługa formularza edycji
 document.getElementById('rezerwacja-edit-form')?.addEventListener('submit', zapisEdytowanejRezerwacji);
+document.getElementById('filtr-rezerwacje-status')?.addEventListener('change', renderujRezerwacje);
+document.getElementById('filtr-rezerwacje-uzytkownik')?.addEventListener('input', renderujRezerwacje);
 
 // Obsługa zamknięcia modala po kliknięciu na overlay
 document.addEventListener('DOMContentLoaded', () => {
@@ -278,6 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
+    await zaladujSprzetyWSerwisieWTrakcie();
     await zaladujLaboratoria();
     await pokazRezerwacje();
 });

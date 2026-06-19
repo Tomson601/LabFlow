@@ -11,17 +11,35 @@
             <input type="datetime-local" id="data_rozpoczecia" name="data_rozpoczecia" required>
             <label for="data_zakonczenia">Data zakończenia:</label>
             <input type="datetime-local" id="data_zakonczenia" name="data_zakonczenia" required>
+            <div id="dostepnosc-sprzetu" class="availability-panel"></div>
             <button type="submit" class="labflow-btn labflow-btn-primary">Zarezerwuj</button>
             <button type="button" class="labflow-btn labflow-btn-secondary" onclick="document.getElementById('formularz-rezerwacji').style.display='none'">Anuluj</button>
         </form>
     </div>
+    <div id="filtry-rezerwacji" class="labflow-filter-bar">
+        <div>
+            <label for="filtr-rezerwacje-status">Status</label>
+            <select id="filtr-rezerwacje-status">
+                <option value="">Wszystkie</option>
+                <option value="oczekujaca">oczekująca</option>
+                <option value="aktywna">aktywna</option>
+                <option value="zakonczona">zakończona</option>
+            </select>
+        </div>
+        {% if user and user.rola == 'admin' %}
+        <div>
+            <label for="filtr-rezerwacje-uzytkownik">Użytkownik</label>
+            <input type="text" id="filtr-rezerwacje-uzytkownik" placeholder="Imię, nazwisko lub email">
+        </div>
+        {% endif %}
+    </div>
     <div id="lista-rezerwacji"></div>
 </div>
 
-<!-- Overlay z blur efektem -->
+
 <div id="modal-overlay"></div>
 
-<!-- Modal edycji rezerwacji -->
+
 <div id="rezerwacja-modal" class="labflow-modal">
     <div class="labflow-modal-content">
         <div class="labflow-modal-header">
@@ -36,10 +54,11 @@
             <input type="datetime-local" id="edit-data-rozpoczecia" name="data_rozpoczecia" required>
             <label for="edit-data-zakonczenia">Data zakończenia</label>
             <input type="datetime-local" id="edit-data-zakonczenia" name="data_zakonczenia" required>
+            <div id="edit-dostepnosc-sprzetu" class="availability-panel"></div>
             <div class="labflow-modal-actions">
                 <button type="submit" class="labflow-btn labflow-btn-primary">Zapisz zmiany</button>
                 <button type="button" class="labflow-btn labflow-btn-danger" onclick="anulujRezerwacjeZModyla()">Anuluj rezerwację</button>
-                <button type="button" class="labflow-btn labflow-btn-secondary" onclick="zamknijModalRezerwacji()">Zamknij</button>
+                
             </div>
         </form>
     </div>
@@ -47,4 +66,7 @@
 
 <link rel="stylesheet" href="/static/css/panel_rezerwacje.css">
 <script src="/static/js/utils.js"></script>
+<script>
+window.currentUserRole = "{{ user.rola|default:'' }}";
+</script>
 <script src="/static/js/panel_rezerwacje.js"></script>

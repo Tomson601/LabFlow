@@ -1,5 +1,22 @@
 <div id="sprzet-content" class="tab-content">
     <h2>Sprzęt</h2>
+    {% if user %}
+    {% if user.rola == 'admin' or user.rola == 'pracownik' %}
+    <button id="dodaj-sprzet-btn" class="labflow-btn labflow-btn-primary" onclick="document.getElementById('formularz-sprzet').style.display='block'">Dodaj sprzęt</button>
+    {% endif %}
+    {% endif %}
+    <div id="formularz-sprzet" style="display:none;">
+        <form id="sprzet-form">
+            <label for="nazwa">Nazwa:</label>
+            <input type="text" id="nazwa" name="nazwa" required>
+            <label for="kategoria">Kategoria:</label>
+            <input type="text" id="kategoria" name="kategoria" required>
+            <label for="laboratorium-sprzet">Laboratorium:</label>
+            <select id="laboratorium-sprzet" name="laboratorium" required></select>
+            <button type="submit" class="labflow-btn labflow-btn-primary">Dodaj</button>
+            <button type="button" class="labflow-btn labflow-btn-secondary" onclick="document.getElementById('formularz-sprzet').style.display='none'">Anuluj</button>
+        </form>
+    </div>
     <div id="filtry-sprzet" class="labflow-filter-bar">
         <div>
             <label for="filtr-sprzet-status">Status</label>
@@ -27,30 +44,34 @@
             <input type="text" id="filtr-sprzet-nazwa" placeholder="Szukaj po nazwie...">
         </div>
     </div>
-    {% if user %}
-    {% if user.rola == 'admin' or user.rola == 'pracownik' %}
-    <button id="dodaj-sprzet-btn" onclick="document.getElementById('formularz-sprzet').style.display='block'">Dodaj sprzęt</button>
-    {% endif %}
-    {% endif %}
-    <div id="formularz-sprzet" style="display:none;">
-        <form id="sprzet-form">
-            <label for="nazwa">Nazwa:</label>
-            <input type="text" id="nazwa" name="nazwa" required>
-            <label for="kategoria">Kategoria:</label>
-            <input type="text" id="kategoria" name="kategoria" required>
-            <label for="status">Status:</label>
-            <select id="status" name="status" required>
-                <option value="dostępny">dostępny</option>
-                <option value="zarezerwowany">zarezerwowany</option>
-                <option value="serwis">serwis</option>
-            </select>
-            <label for="laboratorium-sprzet">Laboratorium:</label>
-            <select id="laboratorium-sprzet" name="laboratorium" required></select>
-            <button type="submit" class="labflow-btn labflow-btn-primary">Dodaj</button>
-            <button type="button" class="labflow-btn labflow-btn-secondary" onclick="document.getElementById('formularz-sprzet').style.display='none'">Anuluj</button>
-        </form>
-    </div>
+    
     <div id="lista-sprzetu"></div>
+
+
+<div id="modal-overlay"></div>
+
+
+    <div id="sprzet-modal" class="labflow-modal">
+        <div class="labflow-modal-content">
+            <div class="labflow-modal-header">
+                <h3>Edytuj sprzęt</h3>
+                <button type="button" class="labflow-modal-close" onclick="zamknijModalSprzetu()">&times;</button>
+            </div>
+            <form id="sprzet-edit-form">
+                <input type="hidden" id="edit-sprzet-id">
+                <label for="edit-sprzet-nazwa">Nazwa</label>
+                <input type="text" id="edit-sprzet-nazwa" required>
+                <label for="edit-sprzet-kategoria">Kategoria</label>
+                <input type="text" id="edit-sprzet-kategoria" required>
+                <label for="edit-sprzet-laboratorium">Laboratorium</label>
+                <select id="edit-sprzet-laboratorium" required></select>
+                <div class="labflow-modal-actions">
+                    <button type="submit" class="labflow-btn labflow-btn-primary">Zapisz zmiany</button>
+                    <button type="button" class="labflow-btn labflow-btn-danger" onclick="usunSprzetZModala()">Usuń sprzęt</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <link rel="stylesheet" href="/static/css/panel_sprzet.css">

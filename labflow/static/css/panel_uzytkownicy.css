@@ -1,0 +1,105 @@
+#uzytkownicy-content h2 {
+    margin-bottom: 18px;
+}
+
+#lista-uzytkownikow {
+    margin-top: 10px;
+}
+
+.uzytkownicy-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #dfe7f2;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 8px #e9ecef;
+}
+
+.uzytkownicy-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 780px;
+}
+
+.uzytkownicy-table th,
+.uzytkownicy-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e6edf5;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.uzytkownicy-table th {
+    background: #f1f3f5;
+    color: #263447;
+    font-weight: 700;
+}
+
+.uzytkownicy-table tr:last-child td {
+    border-bottom: none;
+}
+
+.uzytkownicy-table tr:hover td {
+    background: #f8fbff;
+}
+
+.uzytkownicy-table .labflow-inline-input,
+.uzytkownicy-table .labflow-inline-select {
+    min-height: 38px;
+}
+
+.uzytkownik-email {
+    color: #526173;
+    word-break: break-word;
+}
+
+.uzytkownik-role {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.88rem;
+}
+
+.uzytkownik-role-admin {
+    background: #e7f0ff;
+    color: #1f5fbf;
+}
+
+.uzytkownik-role-pracownik {
+    background: #fff3cd;
+    color: #8a5a00;
+}
+
+.uzytkownik-role-student {
+    background: #e8f6ee;
+    color: #237a42;
+}
+
+.uzytkownik-role-select {
+    max-width: 150px;
+}
+
+.uzytkownik-current {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #eef2f7;
+    color: #526173;
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.uzytkownicy-empty {
+    margin: 14px 0;
+    padding: 18px;
+    border: 1px solid #dfe7f2;
+    border-radius: 8px;
+    background: #f8fbff;
+    color: #526173;
+    text-align: center;
+}
